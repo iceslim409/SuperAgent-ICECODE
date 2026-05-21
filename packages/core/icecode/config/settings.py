@@ -109,8 +109,8 @@ except ImportError:
     class ICECodeSettings:  # type: ignore
         home_dir: Path = field(default_factory=lambda: Path.home() / ".icecode")
         db_path: Optional[Path] = None
-        host_api_port: int = 13210
-        server_secret: str = ""
+        host_api_port: int = field(default_factory=lambda: int(os.getenv("HOST_API_PORT", "13210")))
+        server_secret: str = field(default_factory=lambda: os.getenv("SERVER_SECRET", ""))
         anthropic_api_key: str = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", ""))
         openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
         openrouter_api_key: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY", ""))
