@@ -1,6 +1,6 @@
 [project]
 name = "icecode"
-version = "1.0.0"
+version = "2.0.0"
 description = "ICECODE Super-Agent Network — Python core (agent engine, tools, gateway, memory)"
 requires-python = ">=3.11"
 license = { text = "ICECODE-NC-1.0" }

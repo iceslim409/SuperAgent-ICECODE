@@ -1,11 +1,34 @@
 {
   "name": "@icecode/desktop-app",
   "version": "2.0.0",
-  "description": "ICECODE Super-Agent Network — Desktop App",
+  "description": "ICECODE Super-Agent Network — Desktop App (Electron wrapper for web UI)",
   "main": "main.js",
   "scripts": {
-    "start": "node_modules/.bin/electron .",
-    "dev": "node_modules/.bin/electron . --dev"
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --linux --win --mac"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.icecode.desktop",
+    "productName": "ICECODE",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "node_modules/**/*"
+    ],
+    "linux": {
+      "target": "AppImage"
+    },
+    "win": {
+      "target": "nsis"
+    }
   },
   "license": "ICECODE-NC-1.0"
 }

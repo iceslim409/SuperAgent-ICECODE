@@ -186,19 +186,23 @@ make clean        # Remove cache and build artifacts
 | Package | Language | Status | Notes |
 |---------|----------|--------|-------|
 | `packages/core` | Python | ✅ Production | Agent engine, swarm, RAG, skills |
-| `packages/server` | Python | ✅ Production | FastAPI server, 65+ API routes |
-| `packages/web-ui` | HTML/JS | ✅ Production | Full single-page web application |
-| `packages/desktop-app` | Electron | ✅ Production | Native desktop wrapper |
-| `packages/gateway` | Python | ✅ Production | 20+ platform adapters |
-| `packages/cli` | TypeScript | 🧪 Experimental | TUI client — not yet wired to Python backend |
-| `packages/ts-runtime` | TypeScript | 🧪 Experimental | TS agent abstractions — standalone |
-| `packages/react-ui` | React/TS | 🧪 Experimental | Alternative desktop UI — not yet integrated |
-| `packages/llm` | TypeScript | 🧪 Experimental | LLM provider types — standalone |
-| `packages/shared` | TypeScript | 🧪 Experimental | Shared TS types — standalone |
-| `packages/tools` | Python+TS | 🧪 Experimental | Extended tools — partial integration |
-| `packages/mcp` | Python | ✅ Production | MCP protocol client |
+| `packages/server` | Python | ✅ Production | FastAPI server, 26 rute API |
+| `packages/web-ui` | HTML/JS | ✅ Production | 18 pagini, PWA, WebSocket + SSE |
+| `packages/desktop-app` | Electron | ✅ Production | Desktop wrapper nativ (Electron 33) |
+| `packages/gateway` | Python | ✅ Production | 34 platforme (Telegram, Discord, etc.) |
+| `packages/mcp` | TypeScript | ✅ Compilat | MCP client + OAuth — `dist/` generat |
+| `packages/sdk` | TypeScript | ✅ Compilat | HTTP client tipizat — `dist/` generat |
+| `packages/shared` | TypeScript | ✅ Compilat | Tipuri partajate — `dist/` generat |
+| `packages/ts-core` | TypeScript | ✅ Compilat | Core utilities — `dist/` generat |
+| `packages/ts-runtime` | TypeScript | ✅ Compilat | Agent TS runtime — `dist/` generat |
+| `packages/llm` | TypeScript | ✅ Compilat | 10 provideri LLM — `dist/` generat |
+| `packages/tools` | TypeScript | ✅ Compilat | Registry 70+ tools — `dist/` generat |
+| `packages/plugin` | TypeScript | ✅ Compilat | Plugin API — `dist/` generat |
+| `packages/ui` | TypeScript | ✅ Compilat | UI components (Solid.js) — `dist/` generat |
+| `packages/react-ui` | TypeScript | ✅ Compilat | Desktop UI alternativ — `dist/` 22MB bundle |
+| `packages/cli` | TypeScript | 🧪 Experimental | TUI — compilat, neintegrat cu Python |
 
-> **Note:** TypeScript packages (`cli`, `ts-runtime`, `react-ui`, `llm`, `shared`) contain real code but are not yet integrated with the Python backend. They are planned for v2.1. The fully functional interface is the Web UI at `http://localhost:13210`.
+> **Notă:** Toate 11 pachete TypeScript au `dist/` generat cu `bun build`. Interfața principală rămâne Web UI la `http://localhost:13210`. Integrarea TypeScript↔Python este planificată pentru v2.1.
 
 ---
 

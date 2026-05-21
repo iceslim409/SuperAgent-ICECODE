@@ -1,6 +1,6 @@
 [project]
 name = "icecode-core"
-version = "1.0.0"
+version = "2.0.0"
 description = "ICECODE Core — Python AI agent engine, memory, cron, kanban, RL"
 requires-python = ">=3.11"
 dependencies = [
