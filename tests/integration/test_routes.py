@@ -207,3 +207,54 @@ class TestOpenCodeCompatRoutes:
         assert r.status_code == 200
         data = r.json()
         assert "directory" in data
+
+
+class TestMCPRoutes:
+    def test_list_servers_empty(self, client):
+        r = client.get("/api/mcp/")
+        assert r.status_code == 200
+        assert isinstance(r.json(), list)
+
+    def test_add_server(self, client):
+        r = client.post("/api/mcp/", json={
+            "name": "test-fs",
+            "transport": "stdio",
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-filesystem", "."],
+            "env": {},
+        })
+        assert r.status_code == 200
+        data = r.json()
+        assert data["name"] == "test-fs"
+        assert data["transport"] == "stdio"
+        assert "id" in data
+        assert data["status"] == "disconnected"
+        return data["id"]
+
+    def test_connect_server(self, client):
+        r = client.post("/api/mcp/", json={"name": "conn-test", "transport": "stdio"})
+        sid = r.json()["id"]
+        r2 = client.post(f"/api/mcp/{sid}/connect", json={})
+        assert r2.status_code == 200
+        assert r2.json()["ok"] is True
+        client.delete(f"/api/mcp/{sid}")
+
+    def test_delete_server(self, client):
+        r = client.post("/api/mcp/", json={"name": "del-test", "transport": "stdio"})
+        sid = r.json()["id"]
+        r2 = client.delete(f"/api/mcp/{sid}")
+        assert r2.status_code == 200
+        assert r2.json()["ok"] is True
+        servers = client.get("/api/mcp/").json()
+        assert not any(s["id"] == sid for s in servers)
+
+    def test_add_sse_server(self, client):
+        r = client.post("/api/mcp/", json={
+            "name": "sse-server",
+            "transport": "sse",
+            "url": "http://localhost:8080/mcp",
+        })
+        assert r.status_code == 200
+        data = r.json()
+        assert data["transport"] == "sse"
+        client.delete(f"/api/mcp/{data['id']}")
