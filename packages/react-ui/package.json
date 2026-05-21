@@ -5,7 +5,7 @@
   "type": "module",
   "description": "ICECODE React UI — desktop frontend [experimental — not yet integrated with Python backend]",
   "scripts": {
-    "build": "bun build src/app.tsx --outdir dist --target browser",
+    "build": "bun build src/app.tsx --outdir dist --target browser --loader '.css=text'",
     "dev": "vite",
     "typecheck": "tsc --noEmit"
   },

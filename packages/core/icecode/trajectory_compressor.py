@@ -48,12 +48,18 @@ from rich.console import Console
 from icecode.icecode_constants import OPENROUTER_BASE_URL, get_hermes_home
 from agent.retry_utils import jittered_backoff
 
-# Load .env from ICECODE_HOME first, then project root as a dev fallback.
-from icecode_cli.hermes_cli.env_loader import load_hermes_dotenv
-
-_hermes_home = get_hermes_home()
-_project_env = Path(__file__).parent / ".env"
-load_hermes_dotenv(hermes_home=_hermes_home, project_env=_project_env)
+# Load .env — try icecode_cli first, fallback to python-dotenv / manual load
+try:
+    from icecode_cli.hermes_cli.env_loader import load_hermes_dotenv
+    _hermes_home = get_hermes_home()
+    _project_env = Path(__file__).parent / ".env"
+    load_hermes_dotenv(hermes_home=_hermes_home, project_env=_project_env)
+except ImportError:
+    try:
+        from dotenv import load_dotenv as _load_dotenv
+        _load_dotenv(Path(__file__).parents[4] / ".env", override=False)
+    except ImportError:
+        pass
 
 
 def _effective_temperature_for_model(

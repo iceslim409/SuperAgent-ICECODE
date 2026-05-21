@@ -36,7 +36,13 @@ from typing import List, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from icecode.icecode_constants import get_hermes_home
-from icecode_cli.hermes_cli.config import load_config, _expand_env_vars
+try:
+    from icecode_cli.hermes_cli.config import load_config, _expand_env_vars
+except ImportError:
+    def load_config():
+        return {}
+    def _expand_env_vars(cfg):
+        return cfg
 from icecode.icecode_time import now as _hermes_now
 
 logger = logging.getLogger(__name__)
@@ -122,7 +128,7 @@ _LEGACY_HOME_TARGET_ENV_VARS = {
     "QQBOT_HOME_CHANNEL": "QQ_HOME_CHANNEL",
 }
 
-from cron.jobs import get_due_jobs, mark_job_run, save_job_output, advance_next_run
+from icecode.cron.jobs import get_due_jobs, mark_job_run, save_job_output, advance_next_run
 
 # Sentinel: when a cron agent has nothing new to report, it can start its
 # response with this marker to suppress delivery.  Output is still saved

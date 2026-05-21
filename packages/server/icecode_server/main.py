@@ -16,6 +16,12 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
+# Use INFO by default; set ICECODE_LOG_LEVEL=DEBUG for verbose output
+_log_level = os.getenv("ICECODE_LOG_LEVEL", "INFO").upper()
+logger.remove()
+logger.add(sys.stderr, level=_log_level, colorize=True,
+           format="<green>{time:HH:mm:ss}</green> | <level>{level: <7}</level> | {message}")
+
 _WEB_UI = Path(__file__).parents[2] / "web-ui"
 
 # Import core components
