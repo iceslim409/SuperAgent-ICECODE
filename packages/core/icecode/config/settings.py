@@ -8,7 +8,7 @@ from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, field
 
 try:
-    from pydantic_settings import BaseSettings
+    from pydantic_settings import BaseSettings, SettingsConfigDict
     from pydantic import Field
 
     class ICECodeSettings(BaseSettings):
@@ -81,10 +81,11 @@ try:
         # Prioritizeaza modelele locale cand sunt disponibile
         prefer_local_models: bool = Field(default=False)
 
-        class Config:
-            env_file = ".env"
-            env_file_encoding = "utf-8"
-            extra = "ignore"
+        model_config = SettingsConfigDict(
+            env_file=".env",
+            env_file_encoding="utf-8",
+            extra="ignore",
+        )
 
         def model_post_init(self, __context: Any) -> None:
             if self.db_path is None:

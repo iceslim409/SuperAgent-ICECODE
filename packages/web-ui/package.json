@@ -1,0 +1,12 @@
+{
+  "name": "@icecode/web-ui",
+  "version": "2.0.0",
+  "description": "ICECODE Web UI — static SPA served by FastAPI (port 13210)",
+  "private": true,
+  "license": "ICECODE-NC-1.0",
+  "icecode": {
+    "serve_path": "http://localhost:13210",
+    "static_dir": "packages/web-ui",
+    "entry": "index.html"
+  }
+}
