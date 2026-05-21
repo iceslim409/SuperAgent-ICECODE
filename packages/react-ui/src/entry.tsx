@@ -100,9 +100,11 @@ if (!(root instanceof HTMLElement) && import.meta.env.DEV) {
 }
 
 const getCurrentUrl = () => {
-  if (location.hostname.includes("opencode.ai")) return "http://localhost:4096"
+  // ICECODE Python backend — portul implicit 13210
+  if (import.meta.env.VITE_ICECODE_SERVER_URL) return import.meta.env.VITE_ICECODE_SERVER_URL
   if (import.meta.env.DEV)
-    return `http://${import.meta.env.VITE_OPENCODE_SERVER_HOST ?? "localhost"}:${import.meta.env.VITE_OPENCODE_SERVER_PORT ?? "4096"}`
+    return `http://${import.meta.env.VITE_OPENCODE_SERVER_HOST ?? "localhost"}:${import.meta.env.VITE_OPENCODE_SERVER_PORT ?? "13210"}`
+  // În producţie: serverul este chiar originea (FastAPI serveşte şi UI şi API)
   return location.origin
 }
 

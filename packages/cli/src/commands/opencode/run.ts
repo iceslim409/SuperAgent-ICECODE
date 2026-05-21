@@ -822,11 +822,24 @@ export const RunCommand = effectCmd({
         const request = new Request(input, init)
         return Server.Default().app.fetch(request)
       }) as typeof globalThis.fetch
-      const sdk = createOpencodeClient({
-        baseUrl: "http://icecode.internal",
-        fetch: fetchFn,
-        directory,
-      })
+      // Dacă serverul Python ICECODE rulează, îl folosim direct
+      const icecodePythonUrl = process.env["ICECODE_SERVER_URL"] ?? "http://localhost:13210"
+      let sdk: ReturnType<typeof createOpencodeClient>
+      try {
+        const healthRes = await fetch(`${icecodePythonUrl}/health`)
+        if (healthRes.ok) {
+          sdk = createOpencodeClient({ baseUrl: icecodePythonUrl, directory })
+        } else {
+          throw new Error("not ready")
+        }
+      } catch {
+        // Fallback la server-ul TS intern
+        sdk = createOpencodeClient({
+          baseUrl: "http://icecode.internal",
+          fetch: fetchFn,
+          directory,
+        })
+      }
       await execute(sdk)
     })
   }),

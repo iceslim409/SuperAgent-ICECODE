@@ -208,6 +208,13 @@ def _register_routes(app: FastAPI):
     _try_register(app, "routes.swarm")
     _try_register(app, "routes.knowledge")
     _try_register(app, "routes.router_api")
+    _try_register(app, "routes.opencode_compat")
+
+    # Serve React UI bundle la /desktop/
+    _react_dist = Path(__file__).parents[2] / "react-ui" / "dist"
+    if _react_dist.exists():
+        app.mount("/desktop", StaticFiles(directory=str(_react_dist), html=True), name="react-ui")
+        logger.info("  React UI served at /desktop/")
 
 
 def _try_register(app: FastAPI, module_path: str):
