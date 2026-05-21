@@ -20,7 +20,25 @@ __email__ = "iceslim409@gmail.com"
 __url__ = "https://github.com/icecode-ai/icecode"
 __license__ = "MIT"
 
-# Public API
+# Public API — explicit imports so `from icecode import *` works
+try:
+    from icecode.agent.core import ICECodeAgent
+except ImportError:
+    pass
+
+try:
+    from icecode.swarm.coordinator import SwarmCoordinator
+    from icecode.swarm.worker import SwarmWorker
+    from icecode.swarm.pipeline import run_pipeline
+    from icecode.swarm.parallel import run_parallel
+except ImportError:
+    pass
+
+try:
+    from icecode.knowledge.manager import KnowledgeManager
+except ImportError:
+    pass
+
 __all__ = [
     # Agent
     "ICECodeAgent",
