@@ -630,10 +630,66 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
         <div style="width:72px;height:72px;background:var(--accent);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#000;margin:0 auto 16px">I</div>
         <h2 style="font-size:24px;font-weight:800;margin-bottom:4px">ICECODE</h2>
         <div style="color:var(--text2);font-size:13px">Super-Agent Network v2.0.0</div>
-        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
-          <span class="chip chip-blue">90+ API Routes</span>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <span class="chip chip-blue">159 API Routes</span>
           <span class="chip chip-green">16 Agent Tools</span>
-          <span class="chip chip-yellow">18 UI Pages</span>
+          <span class="chip chip-yellow">19 UI Pages</span>
+          <span class="chip chip-blue">14 LLM Providers</span>
+          <span class="chip chip-green">34 Platform Gateways</span>
+        </div>
+      </div>
+
+      <!-- Capabilities showcase -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-weight:700;margin-bottom:14px;font-size:15px">🚀 What ICECODE Can Do</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">🤖 Multi-Agent Swarm</div>
+            <div style="color:var(--text2);line-height:1.6">Pipeline &amp; parallel orchestration. Multiple AI agents collaborate on a single task. Supervisor pattern with sub-agent delegation.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--green)">📚 Local RAG Knowledge Base</div>
+            <div style="color:var(--text2);line-height:1.6">Semantic search over your documents. Index .txt, .md, .py, .pdf, .json. 100% local — sentence-transformers + FAISS, no cloud needed.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--yellow)">🔌 34 Platform Gateways</div>
+            <div style="color:var(--text2);line-height:1.6">Slack, Discord, Telegram, WhatsApp, Email, GitHub, Jira, Notion, Twitter, LinkedIn, and 24 more. Multi-channel messaging in one place.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">⚡ WebSocket Real-Time Chat</div>
+            <div style="color:var(--text2);line-height:1.6">Bidirectional streaming. Cancel generation mid-stream. SSE fallback. Works with all 14 LLM providers simultaneously.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--green)">🎯 Goals &amp; Ralph Loop</div>
+            <div style="color:var(--text2);line-height:1.6">Long-horizon goal pursuit. Agent autonomously breaks goals into tasks, executes, self-evaluates, and improves over time.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--yellow)">🧠 Self-Learning Skills (RL)</div>
+            <div style="color:var(--text2);line-height:1.6">Reinforcement learning training environment. Agent learns from feedback, saves skills, improves without retraining the model.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">🖥️ Desktop App (Electron)</div>
+            <div style="color:var(--text2);line-height:1.6">Native desktop app for Linux, Windows, macOS. Wraps the React UI. Auto-connects to local Python backend on port 13210.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--green)">💻 TypeScript CLI (TUI)</div>
+            <div style="color:var(--text2);line-height:1.6">Terminal user interface powered by Ink. Auto-detects Python backend. 11 TypeScript packages including React UI, SDK, tools, MCP, gateway.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div style="font-weight:600;margin-bottom:10px;font-size:13px">Tech Stack</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px">
+            <span class="chip chip-blue">Python 3.11+</span>
+            <span class="chip chip-blue">FastAPI</span>
+            <span class="chip chip-blue">SQLite</span>
+            <span class="chip chip-green">TypeScript / Bun</span>
+            <span class="chip chip-green">SolidJS + React</span>
+            <span class="chip chip-green">Electron 33</span>
+            <span class="chip chip-yellow">sentence-transformers</span>
+            <span class="chip chip-yellow">FAISS</span>
+            <span class="chip chip-yellow">OpenAI / Anthropic / Ollama</span>
+          </div>
         </div>
       </div>
 
