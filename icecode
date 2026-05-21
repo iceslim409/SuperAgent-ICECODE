@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# ICECODE — Terminal Agent launcher
+# Usage: ./icecode [options] [message]
+# Examples:
+#   ./icecode                                    # interactive REPL
+#   ./icecode "build me a todo app"              # single task
+#   ./icecode --autonomous "open Firefox"        # computer control mode
+#   ./icecode --model mistral:7b-instruct --provider ollama
+#   ./icecode --list-models
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV="$SCRIPT_DIR/.venv"
+PYTHON="$VENV/bin/python3"
+
+if [ ! -f "$PYTHON" ]; then
+  echo "Error: virtual environment not found. Run ./start.sh first."
+  exit 1
+fi
+
+export PYTHONPATH="$SCRIPT_DIR/packages/core:$SCRIPT_DIR/packages/server:$SCRIPT_DIR/packages/tools:$SCRIPT_DIR/packages/cli"
+
+# Load .env if present
+if [ -f "$SCRIPT_DIR/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$SCRIPT_DIR/.env"
+  set +a
+fi
+
+exec "$PYTHON" "$SCRIPT_DIR/packages/cli/icecode_cli/icecode.py" "$@"

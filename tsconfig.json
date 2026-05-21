@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "paths": {
+      "@icecode/shared": ["./packages/shared/src/index.ts"],
+      "@icecode/llm": ["./packages/llm/src/index.ts"],
+      "@icecode/mcp": ["./packages/mcp/src/index.ts"],
+      "@icecode/server": ["./packages/server/src/index.ts"],
+      "@icecode/sdk": ["./packages/sdk/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "**/dist/**", "**/node_modules/**"]
+}

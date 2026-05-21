@@ -1,0 +1,31 @@
+{
+  "name": "@icecode/tools",
+  "version": "2.0.0",
+  "description": "ICECODE unified tool registry — 70+ tools [experimental — not yet integrated with Python backend]",
+  "main": "dist/registry.js",
+  "scripts": {
+    "build": "bun build src/tools/registry.ts --outdir dist --target bun --external @icecode/core --external @icecode/plugin --external @icecode/sdk"
+  },
+  "dependencies": {
+    "@effect/platform-node": "4.0.0-beta.57",
+    "@icecode/core": "workspace:*",
+    "@icecode/sdk": "workspace:*",
+    "@icecode/shared": "workspace:*",
+    "@tsconfig/bun": "1.0.3",
+    "diff": "8.0.2",
+    "effect": "4.0.0-beta.59",
+    "fuzzysort": "3.1.0",
+    "ignore": "7.0.5",
+    "tree-sitter-bash": "0.25.0",
+    "tree-sitter-powershell": "0.25.10",
+    "turndown": "7.2.0",
+    "web-tree-sitter": "0.25.10",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@tsconfig/bun": "^1.0.3",
+    "@types/bun": "^1.2.0"
+  },
+  "status": "experimental",
+  "license": "ICECODE-NC-1.0"
+}

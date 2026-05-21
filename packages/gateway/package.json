@@ -1,0 +1,19 @@
+{
+  "name": "@icecode/gateway",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "ICECODE multi-platform gateway — 20+ platform adapters + lifecycle manager",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@icecode/shared": "workspace:*",
+    "@icecode/server": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0"
+  },
+  "license": "ICECODE-NC-1.0"
+}

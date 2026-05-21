@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "version": "2.0.0",
+  "name": "@icecode/llm",
+  "type": "module",
+  "license": "ICECODE-NC-1.0",
+  "private": true,
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun --external @icecode/core --external '@icecode/core/*' --external effect --external '@effect/platform-node'",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./route": "./src/route/index.ts",
+    "./provider": "./src/provider.ts",
+    "./providers": "./src/providers/index.ts",
+    "./providers/amazon-bedrock": "./src/providers/amazon-bedrock.ts",
+    "./providers/anthropic": "./src/providers/anthropic.ts",
+    "./providers/azure": "./src/providers/azure.ts",
+    "./providers/cloudflare": "./src/providers/cloudflare.ts",
+    "./providers/github-copilot": "./src/providers/github-copilot.ts",
+    "./providers/google": "./src/providers/google.ts",
+    "./providers/openai": "./src/providers/openai.ts",
+    "./providers/openai-compatible": "./src/providers/openai-compatible.ts",
+    "./providers/openrouter": "./src/providers/openrouter.ts",
+    "./providers/xai": "./src/providers/xai.ts",
+    "./protocols": "./src/protocols/index.ts",
+    "./protocols/anthropic-messages": "./src/protocols/anthropic-messages.ts",
+    "./protocols/bedrock-converse": "./src/protocols/bedrock-converse.ts",
+    "./protocols/gemini": "./src/protocols/gemini.ts",
+    "./protocols/openai-chat": "./src/protocols/openai-chat.ts",
+    "./protocols/openai-compatible-chat": "./src/protocols/openai-compatible-chat.ts",
+    "./protocols/openai-responses": "./src/protocols/openai-responses.ts"
+  },
+  "dependencies": {
+    "@effect/platform-node": "4.0.0-beta.57",
+    "@icecode/core": "workspace:*",
+    "@smithy/eventstream-codec": "^4.2.14",
+    "@smithy/util-utf8": "^4.2.2",
+    "aws4fetch": "^1.0.20",
+    "effect": "4.0.0-beta.59"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "status": "experimental",
+  "description": " [experimental — not yet integrated with Python backend]"
+}

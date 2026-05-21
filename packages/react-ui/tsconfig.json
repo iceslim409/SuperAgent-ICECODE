@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@icecode/shared": ["../shared/src/index.ts"],
+      "@icecode/ts-runtime": ["../ts-runtime/src/index.ts"],
+      "@icecode/ui": ["../ui/src/context/index.ts"],
+      "@icecode/ui/*": ["../ui/src/*"],
+      "@icecode/sdk": ["../sdk/src/index.ts"],
+      "@icecode/sdk/*": ["../sdk/src/*.ts"],
+      "@/": ["./src/"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

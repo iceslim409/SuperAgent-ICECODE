@@ -1,0 +1,17 @@
+{
+  "name": "@icecode/shared",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "ICECODE shared types and utilities [experimental — not yet integrated with Python backend]",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "status": "experimental",
+  "license": "ICECODE-NC-1.0"
+}

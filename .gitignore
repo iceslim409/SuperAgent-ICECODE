@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+myenv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / TypeScript
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ICECODE data (user-specific)
+~/.icecode/
+*.db
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+logs/

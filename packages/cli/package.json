@@ -1,0 +1,33 @@
+{
+  "name": "@icecode/cli",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "ICECODE CLI — TUI cu 33 teme + 28 comenzi CLI [experimental — not yet integrated with Python backend]",
+  "bin": {
+    "icecode": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun build src/commands/opencode/cmd.ts --outdir dist --target bun --external @icecode/core --external @icecode/shared --external @icecode/server --external @icecode/ts-runtime",
+    "dev": "bun run src/commands/opencode/cmd.ts",
+    "tui": "bun run src/tui/app.tsx"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "3.0.64",
+    "@icecode/core": "workspace:*",
+    "@icecode/server": "workspace:*",
+    "@icecode/shared": "workspace:*",
+    "@tsconfig/bun": "1.0.3",
+    "chalk": "5.4.1",
+    "commander": "14.0.0",
+    "effect": "4.0.0-beta.59",
+    "ink": "5.2.1",
+    "react": "19.2.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/react": "^19.0.0",
+    "tsx": "^4.19.0"
+  },
+  "status": "experimental",
+  "license": "ICECODE-NC-1.0"
+}

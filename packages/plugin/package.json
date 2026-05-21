@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@icecode/plugin",
+  "version": "2.0.0",
+  "type": "module",
+  "license": "ICECODE-NC-1.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tool": "./src/tool.ts",
+    "./tui": "./src/tui.ts"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts src/tool.ts --outdir dist --target bun --external effect --external zod --external @icecode/sdk --external @opentui/core --external @opentui/solid"
+  },
+  "dependencies": {
+    "@icecode/sdk": "workspace:*",
+    "effect": "4.0.0-beta.59",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@tsconfig/bun": "^1.0.3",
+    "@types/bun": "^1.2.0"
+  }
+}

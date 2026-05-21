@@ -1,0 +1,28 @@
+{
+  "name": "@icecode/mcp",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "ICECODE MCP client — stdio, SSE, StreamableHTTP, OAuth [experimental — not yet integrated with Python backend]",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun --external @icecode/core --external @icecode/sdk --external effect --external '@effect/platform-node'"
+  },
+  "dependencies": {
+    "@icecode/core": "workspace:*",
+    "@icecode/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.27.1",
+    "@tsconfig/bun": "1.0.3",
+    "ai": "6.0.168",
+    "effect": "4.0.0-beta.59",
+    "mcp": "^1.0.0",
+    "open": "10.1.2",
+    "zod": "4.1.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "status": "experimental",
+  "license": "ICECODE-NC-1.0"
+}

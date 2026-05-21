@@ -1,0 +1,11 @@
+{
+  "name": "@icecode/desktop-app",
+  "version": "2.0.0",
+  "description": "ICECODE Super-Agent Network — Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "node_modules/.bin/electron .",
+    "dev": "node_modules/.bin/electron . --dev"
+  },
+  "license": "ICECODE-NC-1.0"
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@tsconfig/bun/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "paths": {
+      "@icecode/core": ["../ts-core/src/index.ts"],
+      "@icecode/core/*": ["../ts-core/src/*.ts"],
+      "@icecode/shared": ["../shared/src/index.ts"],
+      "@icecode/server": ["../server/src/index.ts"],
+      "@/": ["./src/"],
+      "@/*": ["./src/*"],
+      "@tui/*": ["./src/tui/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "icecode_cli"]
+}
