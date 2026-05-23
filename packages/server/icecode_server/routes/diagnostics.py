@@ -121,12 +121,15 @@ def check_symlinks() -> List[Dict]:
 
 def check_tests() -> List[Dict]:
     try:
-        tests_dir = _PROJECT / "tests"
+        # Run only unit tests — fast (<5s). Integration tests need a live server
+        # and take too long for a health check (use `make test` for the full suite).
+        unit_dir = _PROJECT / "tests" / "unit"
+        tests_dir = unit_dir if unit_dir.exists() else _PROJECT / "tests"
         if not tests_dir.exists():
             return [_warn("tests/ directory missing")]
         r = subprocess.run(
             [sys.executable, "-m", "pytest", str(tests_dir), "-q", "--tb=no", "--no-header"],
-            capture_output=True, text=True, timeout=120,
+            capture_output=True, text=True, timeout=30,
             cwd=str(_PROJECT),
             env={**os.environ, "PYTHONPATH": ":".join([
                 str(_ROOT / "core"), str(_ROOT / "server"),
@@ -134,7 +137,6 @@ def check_tests() -> List[Dict]:
             ])}
         )
         out = r.stdout + r.stderr
-        # parse "X passed, Y failed"
         import re as _re
         passed = next((int(p.group(1)) for line in out.splitlines()
                        for p in [_re.search(r'(\d+) passed', line)]
@@ -142,14 +144,15 @@ def check_tests() -> List[Dict]:
         failed = next((int(p.group(1)) for line in out.splitlines()
                        for p in [_re.search(r'(\d+) failed', line)]
                        if p), 0)
+        label = "unit" if unit_dir.exists() else "all"
         if failed == 0 and passed > 0:
-            return [_ok(f"{passed} tests pass, 0 failed")]
+            return [_ok(f"{passed} {label} tests pass")]
         elif failed > 0:
-            return [_fail(f"{failed} tests fail out of {passed+failed}",
+            return [_fail(f"{failed} {label} tests fail out of {passed+failed}",
                           "Run: make test")]
         return [_warn("No tests found or pytest failed")]
     except subprocess.TimeoutExpired:
-        return [_warn("pytest timeout (>120s)")]
+        return [_warn("unit tests timeout (>30s) — run: make test")]
     except Exception as e:
         return [_fail("pytest", str(e))]
 

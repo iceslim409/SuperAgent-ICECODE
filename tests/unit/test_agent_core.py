@@ -9,6 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[2] / "packages" / "core"))
+sys.path.insert(0, str(Path(__file__).parents[2] / "packages" / "tools"))
 
 
 class TestUsageTracker:
@@ -153,3 +154,145 @@ class TestToolExecution:
         from icecode.agent.core import _exec_tool
         result = await _exec_tool("nonexistent_tool", {})
         assert "Unknown" in result or "error" in result.lower()
+
+
+# ── Tool selection ─────────────────────────────────────────────────────────────
+
+def _get_all_tools():
+    """Build the full tool pool the same way core.py does it at runtime."""
+    from icecode.agent.core import TOOLS, _get_extended_tools
+    pool = list(TOOLS)
+    seen = {t["function"]["name"] for t in pool}
+    for ext in _get_extended_tools():
+        name = ext.get("function", {}).get("name", "")
+        if name and name not in seen:
+            pool.append(ext)
+            seen.add(name)
+    return pool
+
+
+class TestIsGreeting:
+    def test_pure_greetings_return_true(self):
+        from icecode.agent.core import _is_pure_greeting
+        for msg in ["salut", "buna ziua", "ok", "multumesc", "da", "bine", "hello", "hi"]:
+            assert _is_pure_greeting(msg), f"Expected greeting: '{msg}'"
+
+    def test_task_messages_return_false(self):
+        from icecode.agent.core import _is_pure_greeting
+        for msg in [
+            "fa un site web", "creeaza un fisier", "instaleaza numpy",
+            "ajuta-ma cu codul", "fa un kanban board", "cauta pe web",
+            "scrie un script", "fa-mi o aplicatie",
+        ]:
+            assert not _is_pure_greeting(msg), f"Expected NOT greeting: '{msg}'"
+
+    def test_long_message_is_not_greeting(self):
+        from icecode.agent.core import _is_pure_greeting
+        assert not _is_pure_greeting("a" * 51)
+
+    def test_message_with_action_keyword_not_greeting(self):
+        from icecode.agent.core import _is_pure_greeting
+        assert not _is_pure_greeting("fa ceva")
+        assert not _is_pure_greeting("cauta ceva")
+        assert not _is_pure_greeting("list files")
+
+
+class TestTokenize:
+    def test_strips_punctuation(self):
+        from icecode.agent.core import _tokenize
+        assert "codul" in _tokenize("codul?")
+        assert "script" in _tokenize("script.")
+        assert "eroare" in _tokenize("eroare!")
+
+    def test_splits_hyphenated_words(self):
+        from icecode.agent.core import _tokenize
+        tokens = _tokenize("fa-mi ceva")
+        assert "fa" in tokens
+        assert "mi" in tokens
+
+    def test_lowercases(self):
+        from icecode.agent.core import _tokenize
+        assert "python" in _tokenize("Python")
+        assert "cod" in _tokenize("COD")
+
+    def test_em_dash_and_en_dash(self):
+        from icecode.agent.core import _tokenize
+        tokens = _tokenize("ajuta–ma")
+        assert "ajuta" in tokens
+
+
+class TestSelectTools:
+    def setup_method(self):
+        self.all_tools = _get_all_tools()
+
+    def _names(self, msg):
+        from icecode.agent.core import _select_tools_for_message
+        return {t["function"]["name"] for t in _select_tools_for_message(msg, self.all_tools)}
+
+    # Pure greetings → 0 tools
+    def test_greeting_returns_no_tools(self):
+        for msg in ["salut", "buna ziua", "ok", "multumesc", "da"]:
+            assert self._names(msg) == set(), f"'{msg}' should return 0 tools"
+
+    # Any task → always has core 7 tools
+    def test_task_always_has_core_tools(self):
+        core = {"read_file", "write_file", "edit_file", "run_terminal",
+                "list_dir", "search_web", "web_fetch"}
+        for msg in ["fa un site", "scrie un script", "instaleaza ceva", "fa-mi o aplicatie"]:
+            selected = self._names(msg)
+            missing = core - selected
+            assert not missing, f"'{msg}' missing core tools: {missing}"
+
+    # Code keywords trigger code tier
+    def test_code_keyword_adds_code_tools(self):
+        for msg in ["ajuta-ma cu codul?", "am o eroare in script", "fa un framework web"]:
+            names = self._names(msg)
+            assert "git_command" in names or "code_search" in names, \
+                f"'{msg}' should trigger code tier, got: {names}"
+
+    # Punctuation: "codul?" should still trigger code tools
+    def test_punctuation_in_keyword_handled(self):
+        names = self._names("poti sa ma ajuti cu codul?")
+        assert "read_file" in names, "punctuation should not block tool selection"
+
+    # Hyphen: "fa-mi" → "fa" matches action keyword
+    def test_hyphenated_action_word(self):
+        names = self._names("fa-mi o pagina web")
+        assert len(names) >= 7, "hyphen should not block tool selection"
+
+    # Kanban keywords
+    def test_kanban_keyword_adds_kanban_tools(self):
+        for msg in ["arata-mi taskurile din kanban", "creeaza un task nou", "fa un board"]:
+            names = self._names(msg)
+            assert any(n.startswith("kanban") or n in {"create_task", "list_tasks"}
+                       for n in names), f"'{msg}' should add kanban tools, got: {names}"
+
+    # Browser keywords
+    def test_browser_keyword_adds_browser_tools(self):
+        names = self._names("fa un screenshot la browser")
+        assert "browser_snapshot" in names or "browser_navigate" in names
+
+    # Telegram keyword adds messaging tools (only if gateway configured)
+    def test_telegram_keyword_triggers_domain_check(self):
+        # Even if send_message isn't available (no gateway), core tools should be present
+        names = self._names("vreau sa fac un bot de telegram")
+        assert "read_file" in names, "core tools should always be present for task messages"
+
+    # Long message always gets tools regardless of content
+    def test_long_message_gets_tools(self):
+        long = "ce " * 30  # 90 chars, clearly > 80
+        names = self._names(long)
+        assert len(names) >= 7, "long messages should always get core tools"
+
+    # RL keywords
+    def test_rl_keywords(self):
+        names = self._names("porneste un rl training run")
+        assert any("rl_" in n for n in names), "RL keywords should add RL tools"
+
+    # No duplicate tools returned
+    def test_no_duplicate_tools(self):
+        from icecode.agent.core import _select_tools_for_message
+        msg = "fa un site cu kanban si browser si rl training run"
+        selected = _select_tools_for_message(msg, self.all_tools)
+        names = [t["function"]["name"] for t in selected]
+        assert len(names) == len(set(names)), "No duplicate tools should be returned"

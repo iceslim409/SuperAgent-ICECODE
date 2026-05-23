@@ -53,7 +53,8 @@ class TestPipeline:
         ]
 
         events = []
-        with patch("icecode.swarm.worker.SwarmWorker") as MockWorker:
+        # patch at the module where it's used, not where it's defined
+        with patch("icecode.swarm.pipeline.SwarmWorker") as MockWorker:
             mock_w = MagicMock()
             mock_w.last_output = "mock output"
 
@@ -80,7 +81,7 @@ class TestPipeline:
             received_tasks.append(task)
             yield {"type": "text", "content": "output_from_stage"}
 
-        with patch("icecode.swarm.worker.SwarmWorker") as MockWorker:
+        with patch("icecode.swarm.pipeline.SwarmWorker") as MockWorker:
             mock_w = MagicMock()
             mock_w.run = mock_run_capturing
             mock_w.last_output = "output_from_stage"
@@ -116,3 +117,115 @@ class TestSwarmCoordinator:
         async for e in SwarmCoordinator.run_template("nonexistent", "input"):
             events.append(e)
         assert any(e.get("type") == "error" for e in events)
+
+
+class TestParallel:
+    @pytest.mark.asyncio
+    async def test_parallel_all_agents_receive_same_input(self):
+        from icecode.swarm.parallel import run_parallel
+
+        async def mock_run(task, context=""):
+            yield {"type": "text", "content": f"answer to: {task}"}
+
+        agents = [
+            {"role": "critic", "task": "Analyze: {input}"},
+            {"role": "advocate", "task": "Analyze: {input}"},
+        ]
+
+        with patch("icecode.swarm.parallel.SwarmWorker") as MockWorker:
+            mock_w = MagicMock()
+            mock_w.run = mock_run
+            mock_w.last_output = "mock"
+            MockWorker.return_value = mock_w
+
+            events = []
+            async for e in run_parallel(agents, "test topic"):
+                events.append(e)
+
+        done_events = [e for e in events if e.get("type") == "parallel_agent_done"]
+        assert len(done_events) == 2
+
+    @pytest.mark.asyncio
+    async def test_parallel_yields_done_at_end(self):
+        from icecode.swarm.parallel import run_parallel
+
+        async def mock_run(task, context=""):
+            yield {"type": "text", "content": "done"}
+
+        agents = [{"role": "a", "task": "{input}"}, {"role": "b", "task": "{input}"}]
+
+        with patch("icecode.swarm.parallel.SwarmWorker") as MockWorker:
+            mock_w = MagicMock()
+            mock_w.run = mock_run
+            mock_w.last_output = "done"
+            MockWorker.return_value = mock_w
+
+            events = []
+            async for e in run_parallel(agents, "input"):
+                events.append(e)
+
+        assert events[-1].get("type") == "parallel_done"
+
+    @pytest.mark.asyncio
+    async def test_parallel_single_agent(self):
+        from icecode.swarm.parallel import run_parallel
+
+        async def mock_run(task, context=""):
+            yield {"type": "text", "content": "result"}
+
+        with patch("icecode.swarm.parallel.SwarmWorker") as MockWorker:
+            mock_w = MagicMock()
+            mock_w.run = mock_run
+            mock_w.last_output = "result"
+            MockWorker.return_value = mock_w
+
+            events = []
+            async for e in run_parallel([{"role": "solo", "task": "{input}"}], "test"):
+                events.append(e)
+
+        text_events = [e for e in events if e.get("type") == "text"]
+        assert len(text_events) >= 1
+
+
+class TestPipelineEdgeCases:
+    @pytest.mark.asyncio
+    async def test_single_stage_pipeline(self):
+        from icecode.swarm.pipeline import run_pipeline
+
+        async def mock_run(task, context=""):
+            yield {"type": "text", "content": "output"}
+
+        with patch("icecode.swarm.pipeline.SwarmWorker") as MockWorker:
+            mock_w = MagicMock()
+            mock_w.run = mock_run
+            mock_w.last_output = "output"
+            MockWorker.return_value = mock_w
+
+            events = []
+            async for e in run_pipeline([{"role": "solo", "task": "{input}"}], "start"):
+                events.append(e)
+
+        assert events[-1].get("type") == "pipeline_done"
+
+    @pytest.mark.asyncio
+    async def test_pipeline_input_substitution(self):
+        from icecode.swarm.pipeline import run_pipeline
+
+        captured_tasks = []
+
+        async def mock_run(task, context=""):
+            captured_tasks.append(task)
+            yield {"type": "text", "content": "out"}
+
+        with patch("icecode.swarm.pipeline.SwarmWorker") as MockWorker:
+            mock_w = MagicMock()
+            mock_w.run = mock_run
+            mock_w.last_output = "out"
+            MockWorker.return_value = mock_w
+
+            async for _ in run_pipeline(
+                [{"role": "r", "task": "Process: {input}"}], "hello"
+            ):
+                pass
+
+        assert captured_tasks[0] == "Process: hello"
