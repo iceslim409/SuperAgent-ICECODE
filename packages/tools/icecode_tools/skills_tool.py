@@ -76,7 +76,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Set, Tuple
 
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 from icecode_cli.hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)

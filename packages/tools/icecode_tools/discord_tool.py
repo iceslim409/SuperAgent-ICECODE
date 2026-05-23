@@ -33,7 +33,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 
-from tools.registry import registry
+from icecode_tools.registry import registry
 
 logger = logging.getLogger(__name__)
 

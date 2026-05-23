@@ -30,7 +30,7 @@ import logging
 import os
 from typing import Any, Optional
 
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 logger = logging.getLogger(__name__)
 

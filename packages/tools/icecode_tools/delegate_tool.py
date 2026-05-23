@@ -454,7 +454,7 @@ def _is_mcp_toolset_name(name: str) -> bool:
     if str(name).startswith("mcp-"):
         return True
     try:
-        from tools.registry import registry
+        from icecode_tools.registry import registry
 
         target = registry.get_toolset_alias_target(str(name))
     except Exception:
@@ -2755,7 +2755,7 @@ DELEGATE_TASK_SCHEMA = {
 
 
 # --- Registry ---
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 registry.register(
     name="delegate_task",

@@ -1888,7 +1888,7 @@ async def _send_yuanbao(chat_id, message, media_files=None):
 
 
 # --- Registry ---
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 registry.register(
     name="send_message",

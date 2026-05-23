@@ -513,7 +513,7 @@ if __name__ == "__main__":
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
-from tools.registry import registry
+from icecode_tools.registry import registry
 
 MOA_SCHEMA = {
     "name": "mixture_of_agents",

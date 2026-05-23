@@ -104,7 +104,7 @@ const getCurrentUrl = () => {
   if (import.meta.env.VITE_ICECODE_SERVER_URL) return import.meta.env.VITE_ICECODE_SERVER_URL
   if (import.meta.env.DEV)
     return `http://${import.meta.env.VITE_OPENCODE_SERVER_HOST ?? "localhost"}:${import.meta.env.VITE_OPENCODE_SERVER_PORT ?? "13210"}`
-  // În producţie: serverul este chiar originea (FastAPI serveşte şi UI şi API)
+  // In production: the server is the origin itself (FastAPI serves both UI and API)
   return location.origin
 }
 

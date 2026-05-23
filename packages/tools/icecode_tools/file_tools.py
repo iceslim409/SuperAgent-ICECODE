@@ -1018,7 +1018,7 @@ def search_tool(pattern: str, target: str = "content", path: str = ".",
 # ---------------------------------------------------------------------------
 # Schemas + Registry
 # ---------------------------------------------------------------------------
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 
 def _check_file_reqs():

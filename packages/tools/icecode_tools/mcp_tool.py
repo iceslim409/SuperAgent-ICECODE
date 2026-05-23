@@ -1061,7 +1061,7 @@ class MCPServerTask:
         After the initial ``await`` (list_tools), all mutations are synchronous
         — atomic from the event loop's perspective.
         """
-        from tools.registry import registry
+        from icecode_tools.registry import registry
 
         async with self._refresh_lock:
             # Capture old tool names for change diff
@@ -1577,7 +1577,7 @@ class MCPServerTask:
 
     async def shutdown(self):
         """Signal the Task to exit and wait for clean resource teardown."""
-        from tools.registry import registry
+        from icecode_tools.registry import registry
 
         self._shutdown_event.set()
         # Defensive: if _wait_for_lifecycle_event is blocking, we need ANY
@@ -2371,7 +2371,7 @@ def _make_read_resource_handler(server_name: str, tool_timeout: float):
     """Return a sync handler that reads a resource by URI from an MCP server."""
 
     def _handler(args: dict, **kwargs) -> str:
-        from tools.registry import tool_error
+        from icecode_tools.registry import tool_error
 
         with _lock:
             server = _servers.get(server_name)
@@ -2494,7 +2494,7 @@ def _make_get_prompt_handler(server_name: str, tool_timeout: float):
     """Return a sync handler that gets a prompt by name from an MCP server."""
 
     def _handler(args: dict, **kwargs) -> str:
-        from tools.registry import tool_error
+        from icecode_tools.registry import tool_error
 
         with _lock:
             server = _servers.get(server_name)
@@ -2924,7 +2924,7 @@ def _register_server_tools(name: str, server: MCPServerTask, config: dict) -> Li
     Returns:
         List of registered prefixed tool names.
     """
-    from tools.registry import registry
+    from icecode_tools.registry import registry
 
     registered_names: List[str] = []
     toolset_name = f"mcp-{name}"

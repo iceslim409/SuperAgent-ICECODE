@@ -1391,7 +1391,7 @@ process_registry = ProcessRegistry()
 # ---------------------------------------------------------------------------
 # Registry -- the "process" tool schema + handler
 # ---------------------------------------------------------------------------
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 PROCESS_SCHEMA = {
     "name": "process",

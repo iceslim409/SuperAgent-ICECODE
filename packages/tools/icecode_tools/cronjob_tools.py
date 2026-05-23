@@ -656,7 +656,7 @@ def check_cronjob_requirements() -> bool:
 
 
 # --- Registry ---
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 registry.register(
     name="cronjob",

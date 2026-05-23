@@ -595,7 +595,7 @@ SESSION_SEARCH_SCHEMA = {
 
 
 # --- Registry ---
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 registry.register(
     name="session_search",

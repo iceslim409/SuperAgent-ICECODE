@@ -2,9 +2,11 @@
 """
 ICECODE Terminal Agent — interactive REPL.
 
-./icecode                      interactive REPL
-./icecode "task"               single-shot
-./icecode --autonomous "task"  computer control
+./icecode                        interactive REPL
+./icecode "task"                 single-shot
+./icecode --autopilot "task"     autopilot — no confirmations
+./icecode -A "task"              autopilot shortcut
+./icecode --autonomous "task"    computer control
 ./icecode --list-models
 
 Commands (Tab to autocomplete, / + Enter for full menu):
@@ -18,10 +20,15 @@ Commands (Tab to autocomplete, / + Enter for full menu):
   /history      messages in current session
   /memories     stored agent memories
   /forget KEY   delete a memory
-  /agents  /channels  /skills  /cron
+  /agents  /channels  /cron
+  /skills           skills manager — activate/deactivate skills
+  /skills library   browse all 166 skills, toggle on/off
+  /skills clear     clear all active skills
+  /autoskills       toggle auto-detect skills per message
   /status       full system status
   /usage        token stats
   /computer on|off
+  /autopilot on|off|toggle
   /clear  /help  /quit
 """
 from __future__ import annotations
@@ -72,13 +79,15 @@ SLASH_COMMANDS = [
     ("/history",   "📜 Current session messages"),
     ("/memories",  "🧠 Agent memories"),
     ("/forget",    "🗑  Delete a memory"),
-    ("/agents",    "👾 Configured agents"),
-    ("/channels",  "📡 Channels (Telegram, Discord…)"),
-    ("/skills",    "⚡ Skills"),
-    ("/cron",      "⏰ Scheduled jobs"),
-    ("/status",    "🔍 System status"),
-    ("/usage",     "📊 Token usage"),
-    ("/computer",  "🖥  Computer control mode"),
+    ("/agents",      "👾 Configured agents"),
+    ("/channels",    "📡 Channels (Telegram, Discord…)"),
+    ("/skills",      "⚡ Skills — manage active skills"),
+    ("/autoskills",  "🔮 Auto-skills — auto-detect skills per message"),
+    ("/cron",        "⏰ Scheduled jobs"),
+    ("/status",      "🔍 System status"),
+    ("/usage",       "📊 Token usage"),
+    ("/computer",    "🖥  Computer control mode"),
+    ("/autopilot",   "🤖 Autopilot — agent runs autonomously without confirmation"),
     ("/clear",     "🧹 Clear screen"),
     ("/help",      "❓ Help"),
     ("/quit",      "👋 Quit"),
@@ -184,12 +193,15 @@ async def _pick_async(
 
 class ICECodeCLI:
     def __init__(self, model: str, provider: str, server: str,
-                 enable_computer: bool = False):
+                 enable_computer: bool = False, autopilot: bool = False):
         self.model          = model
         self.provider       = provider
         self.server         = server.rstrip("/")
         self.session_id     = f"s_{uuid.uuid4().hex[:8]}"
         self.enable_computer = enable_computer
+        self.autopilot      = autopilot
+        self.active_skills  : List[str] = []
+        self.auto_skills    : bool      = False
 
         self.cached_models       : List[str]  = []
         self.cached_sessions     : List[Dict] = []
@@ -456,17 +468,123 @@ class ICECodeCLI:
                      {"name":"Platform","width":16},
                      {"name":"Status","width":12}], rows)
 
-    def cmd_skills(self):
-        skills = self._api("/api/skills/") or []
-        if not skills:
-            console.print("[dim]No skills loaded yet.[/dim]"); return
-        rows = [[s.get("name","—"), s.get("description","")[:60],
-                 "[green]on[/green]" if s.get("enabled", True) else "[dim]off[/dim]"]
-                for s in skills[:30]]
-        self._table(f"Skills ({len(skills)})",
-                    [{"name":"Skill","style":"cyan","min_width":22},
-                     {"name":"Description","min_width":40},
-                     {"name":"Status","width":10}], rows)
+    async def cmd_skills(self, arg: str = ""):
+        if arg == "clear":
+            n = len(self.active_skills)
+            self.active_skills.clear()
+            console.print(f"[green]✓ Cleared {n} active skill(s)[/green]")
+            return
+        if arg in ("library", "lib", "browse", "l"):
+            await self._cmd_skills_library()
+            return
+        if arg:
+            await self._cmd_skills_toggle(arg)
+            return
+
+        # Default: show status panel
+        auto_st = "[bold magenta]ON 🔮[/bold magenta]" if self.auto_skills else "[dim]off[/dim]"
+        console.print(Panel(
+            f"[dim]Auto-detect:[/dim]   {auto_st}\n"
+            f"[dim]Active skills:[/dim] [cyan]{len(self.active_skills)}[/cyan] "
+            + (f"— {', '.join(self.active_skills[:6])}{'…' if len(self.active_skills)>6 else ''}"
+               if self.active_skills else "[dim]none[/dim]"),
+            title="[bold]⚡ Skills[/bold]", border_style="cyan"))
+
+        items = [
+            {"label": "📚 Browse library — activate/deactivate skills",
+             "value": "library", "description": f"166 skills available"},
+            {"label": "🔮 Toggle auto-detect",
+             "value": "autoskills",
+             "description": "Auto on" if self.auto_skills else "Auto off"},
+            {"label": "🗑  Clear all active skills",
+             "value": "clear",
+             "description": f"{len(self.active_skills)} currently active"},
+        ]
+        chosen = await _pick_async(self.pt, items, title="Skills options",
+                                   filter_hint="type number")
+        if chosen == "library":
+            await self._cmd_skills_library()
+        elif chosen == "autoskills":
+            self.auto_skills = not self.auto_skills
+            if self.auto_skills:
+                console.print("[bold magenta]🔮 Auto-skills ON — relevant skills detected per message[/bold magenta]")
+            else:
+                console.print("[dim]Auto-skills dezactivat[/dim]")
+        elif chosen == "clear":
+            self.active_skills.clear()
+            console.print("[green]✓ All skills cleared[/green]")
+
+    async def _cmd_skills_library(self):
+        """Browse all 166 skills from the library with activate/deactivate."""
+        console.print("[dim]Loading skills library...[/dim]")
+        library = self._api("/api/skills/library", timeout=10) or []
+        if not library:
+            console.print("[yellow]Skills library empty. Is the server running?[/yellow]")
+            return
+
+        # Group by category for display
+        by_cat: dict = {}
+        for s in library:
+            cat = s.get("category", "general")
+            by_cat.setdefault(cat, []).append(s)
+
+        # Show categories first
+        cat_items = []
+        for cat, skills in sorted(by_cat.items()):
+            active_in_cat = sum(1 for s in skills if s.get("slug","") in self.active_skills)
+            label = f"{cat}  ({len(skills)} skills"
+            if active_in_cat:
+                label += f", [green]{active_in_cat} active[/green]"
+            label += ")"
+            cat_items.append({"label": label, "value": cat,
+                               "description": f"{len(skills)} skills in category"})
+        cat_items.append({"label": "📋 Show ALL skills", "value": "__all__",
+                          "description": "Browse all 166 skills together"})
+        cat_items.append({"label": "❌ Clear all active", "value": "__clear__",
+                          "description": f"{len(self.active_skills)} currently active"})
+
+        chosen_cat = await _pick_async(self.pt, cat_items,
+                                       title="Skills Library — pick category",
+                                       filter_hint="type number or category name")
+        if not chosen_cat:
+            return
+        if chosen_cat == "__clear__":
+            self.active_skills.clear()
+            console.print("[green]✓ All skills cleared[/green]")
+            return
+
+        skills_to_show = library if chosen_cat == "__all__" else by_cat.get(chosen_cat, [])
+
+        skill_items = []
+        for s in skills_to_show:
+            slug = s.get("slug", s.get("name", ""))
+            is_active = slug in self.active_skills
+            status = "[green]✓ active[/green]" if is_active else ""
+            label = f"{'● ' if is_active else '○ '}{slug}"
+            skill_items.append({
+                "label": label,
+                "value": slug,
+                "description": f"{s.get('description','')[:55]}  {status}",
+            })
+
+        chosen_slug = await _pick_async(self.pt, skill_items,
+                                        title=f"Skills — {chosen_cat}  (● = active)",
+                                        filter_hint="type number or skill name to toggle")
+        if chosen_slug:
+            await self._cmd_skills_toggle(chosen_slug)
+
+    async def _cmd_skills_toggle(self, slug: str):
+        """Toggle a skill on/off by slug."""
+        if slug in self.active_skills:
+            self.active_skills.remove(slug)
+            console.print(f"[dim]○ Skill deactivated: {slug}[/dim]")
+        else:
+            self.active_skills.append(slug)
+            console.print(f"[green]● Skill activated: {slug}[/green]")
+        if self.active_skills:
+            console.print(f"  [dim]Active ({len(self.active_skills)}): "
+                          f"{', '.join(self.active_skills[:6])}"
+                          f"{'…' if len(self.active_skills)>6 else ''}[/dim]")
 
     def cmd_cron(self):
         jobs = self._api("/api/cron/") or []
@@ -498,6 +616,15 @@ class ICECodeCLI:
         t.add_row("Python",          diag.get("python","—")[:50])
         t.add_row("Current model",   f"[cyan]{self.provider}/{self.model}[/cyan]")
         t.add_row("Computer mode",   "[yellow]ON ⚡[/yellow]" if self.enable_computer else "off")
+        t.add_row("Autopilot",       "[bold green]ON 🤖[/bold green]" if self.autopilot else "off")
+        skills_st = (f"[bold magenta]ON 🔮[/bold magenta]" if self.auto_skills
+                     else "[dim]off[/dim]")
+        t.add_row("Auto-skills",     skills_st)
+        if self.active_skills:
+            t.add_row("Active skills",
+                      f"[cyan]{len(self.active_skills)}[/cyan] — "
+                      + ", ".join(self.active_skills[:5])
+                      + ("…" if len(self.active_skills) > 5 else ""))
         t.add_row("Active session",  f"[cyan]{self.session_id}[/cyan]")
         t.add_row("Sessions saved",  str(len(sessions)))
         t.add_row("Memories",        str(len(mems)))
@@ -538,6 +665,10 @@ class ICECodeCLI:
             "model": self.model,
             "provider": self.provider,
             "enable_computer": self.enable_computer,
+            "autopilot": self.autopilot,
+            "max_iterations": 30 if self.autopilot else 10,
+            "active_skills": self.active_skills,
+            "auto_skills": self.auto_skills,
         }
         full_text = ""; tool_calls = []; usage = {}
         try:
@@ -561,6 +692,14 @@ class ICECodeCLI:
                         ct = c.get("type")
                         if ct == "session":
                             self.session_id = c.get("session_id", self.session_id)
+                        elif ct == "skills_detected":
+                            detected = c.get("skills", [])
+                            if detected:
+                                console.print(f"  [bold magenta]🔮 Skills detectate automat: "
+                                              f"{', '.join(detected)}[/bold magenta]")
+                        elif ct == "router":
+                            m = c.get("model",""); cplx = c.get("complexity","")
+                            console.print(f"  [dim]🧭 Router → {m} ({cplx})[/dim]")
                         elif ct == "tool_call":
                             if cur: console.print(); cur = ""
                             name = c.get("name","")
@@ -612,7 +751,15 @@ class ICECodeCLI:
         console.print(f"  Session: [dim]{self.session_id}[/dim]")
         if self.enable_computer:
             console.print(f"  [bold yellow]⚡ AUTONOMOUS MODE — computer control active[/bold yellow]")
-        console.print(f"  [dim]/ = command menu   Tab = autocomplete   /help = all commands[/dim]\n")
+        if self.autopilot:
+            console.print(f"  [bold green]🤖 AUTOPILOT ON — agent runs autonomously without confirmation[/bold green]")
+        if self.auto_skills:
+            console.print(f"  [bold magenta]🔮 AUTO-SKILLS ON — skill-uri detectate automat per mesaj[/bold magenta]")
+        if self.active_skills:
+            console.print(f"  [cyan]⚡ {len(self.active_skills)} skill(s) active:[/cyan] "
+                          f"{', '.join(self.active_skills[:5])}"
+                          f"{'…' if len(self.active_skills)>5 else ''}")
+        console.print(f"  [dim]/ = command menu   Tab = autocomplete   /skills = skills   /autoskills = auto   /help = all[/dim]\n")
 
         try: self._model_items()
         except Exception: pass
@@ -625,9 +772,13 @@ class ICECodeCLI:
         while True:
             try:
                 mode = " [AUTO]" if self.enable_computer else ""
+                pilot = " [🤖AUTOPILOT]" if self.autopilot else ""
+                skl = (f" [⚡{len(self.active_skills)}sk]"
+                       if self.active_skills else "")
+                auto_sk = " [🔮]" if self.auto_skills else ""
                 prompt_html = HTML(
                     f'<ansi_green>ICECODE</ansi_green>'
-                    f'<ansi_cyan>{mode} [{self.provider}/{self.model}]</ansi_cyan>'
+                    f'<ansi_cyan>{mode}{pilot}{skl}{auto_sk} [{self.provider}/{self.model}]</ansi_cyan>'
                     f' <ansi_white>›</ansi_white> '
                 )
                 user_input = await self.pt.prompt_async(prompt_html, style=PT_STYLE)
@@ -678,10 +829,36 @@ class ICECodeCLI:
                         else: await self.cmd_forget_picker()
                     elif cmd == "/agents":     self.cmd_agents()
                     elif cmd == "/channels":   self.cmd_channels()
-                    elif cmd == "/skills":     self.cmd_skills()
+                    elif cmd == "/skills":     await self.cmd_skills(arg)
+                    elif cmd == "/autoskills":
+                        if arg in ("on","1","yes","true"):
+                            self.auto_skills = True
+                            console.print("[bold magenta]🔮 Auto-skills ON — skill-uri detectate automat per mesaj[/bold magenta]")
+                        elif arg in ("off","0","no","false"):
+                            self.auto_skills = False
+                            console.print("[dim]Auto-skills dezactivat[/dim]")
+                        else:
+                            self.auto_skills = not self.auto_skills
+                            if self.auto_skills:
+                                console.print("[bold magenta]🔮 Auto-skills ON — skill-uri detectate automat per mesaj[/bold magenta]")
+                            else:
+                                console.print("[dim]Auto-skills dezactivat[/dim]")
                     elif cmd == "/cron":       self.cmd_cron()
                     elif cmd == "/status":     self.cmd_status()
                     elif cmd == "/usage":      self.cmd_usage()
+                    elif cmd == "/autopilot":
+                        if arg in ("on","1","yes","true"):
+                            self.autopilot = True
+                            console.print("[bold green]🤖 AUTOPILOT ON — agent runs autonomously without confirmation[/bold green]")
+                        elif arg in ("off","0","no","false"):
+                            self.autopilot = False
+                            console.print("[dim]Autopilot dezactivat[/dim]")
+                        else:
+                            self.autopilot = not self.autopilot
+                            if self.autopilot:
+                                console.print("[bold green]🤖 AUTOPILOT ON — agent runs autonomously without confirmation[/bold green]")
+                            else:
+                                console.print("[dim]Autopilot dezactivat[/dim]")
                     elif cmd == "/computer":
                         if arg in ("on","1","yes"):
                             self.enable_computer = True
@@ -724,9 +901,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  ./icecode                              interactive REPL
-  ./icecode "build a REST API"           single task
-  ./icecode --autonomous "open Firefox"  computer control
+  ./icecode                                    interactive REPL
+  ./icecode "build a REST API"                 single task
+  ./icecode --autopilot "build a REST API"     run fully autonomous
+  ./icecode -A "creaza un proiect Python"       shortcut -A
+  ./icecode --autonomous "open Firefox"         computer control
+  ./icecode --auto-skills "debug my code"       auto-detect skills
+  ./icecode --skills python-debugpy "fix bug"   with specific skill
   ./icecode --list-models
         """)
     p.add_argument("message",     nargs="?",  help="Single task")
@@ -736,12 +917,19 @@ Examples:
     p.add_argument("--list-models",action="store_true",help="List models and exit")
     p.add_argument("--autonomous","-a",action="store_true",
                    help="Computer control mode")
+    p.add_argument("--autopilot","-A",action="store_true",
+                   help="Autopilot mode — agent works autonomously without asking for confirmation")
+    p.add_argument("--skills", nargs="*", metavar="SLUG",
+                   help="Activate skills by slug (e.g. --skills python-debugpy github-pr-workflow)")
+    p.add_argument("--auto-skills", action="store_true",
+                   help="Auto-detect relevant skills per message")
     args = p.parse_args()
 
     provider = args.provider or os.getenv("ICECODE_PROVIDER","")
     model    = args.model    or os.getenv("ICECODE_MODEL","")
 
     if not provider or not model:
+        # Check .env for cloud API keys
         env = Path(__file__).parents[3] / ".env"
         if env.exists():
             for line in env.read_text().splitlines():
@@ -750,11 +938,47 @@ Examples:
                 if line.startswith("OPENAI_API_KEY=") and line.split("=",1)[1].strip():
                     provider = provider or "openai"; model = model or "gpt-4o-mini"; break
 
+        # Check providers.json for configured cloud providers
+        if not model:
+            try:
+                import json as _json
+                pf = Path.home() / ".icecode" / "data" / "providers.json"
+                if pf.exists():
+                    for p in _json.loads(pf.read_text()):
+                        if p.get("enabled", True) and p.get("api_key") and p.get("models"):
+                            provider = provider or p["id"]
+                            model = p.get("default_model") or p["models"][0]
+                            break
+            except Exception:
+                pass
+
     provider = provider or "ollama"
-    model    = model    or "qwen2.5-coder:7b"
+    if not model:
+        # Auto-pick best available Ollama model from installed list
+        _PREFS = ["qwen2.5:7b","qwen3.5:4b","mistral:7b-instruct","phi4-mini:latest",
+                  "granite4.1:3b","qwen2.5:3b","qwen3.5:2b","qwen2.5:1.5b","llama3.2:1b",
+                  "qwen2.5-coder:7b","qwen2.5:0.5b-instruct"]
+        try:
+            import httpx as _hx
+            r = _hx.get("http://localhost:11434/api/tags", timeout=2)
+            installed = [m["name"] for m in r.json().get("models", [])]
+            for pref in _PREFS:
+                if any(m == pref or m.startswith(pref.split(":")[0]+":") for m in installed):
+                    model = next(m for m in installed if m==pref or m.startswith(pref.split(":")[0]+":"))
+                    break
+            if not model and installed:
+                model = installed[0]
+        except Exception:
+            pass
+        model = model or "qwen2.5:7b"
 
     cli = ICECodeCLI(model=model, provider=provider, server=args.server,
-                     enable_computer=args.autonomous)
+                     enable_computer=args.autonomous,
+                     autopilot=args.autopilot)
+    if args.skills:
+        cli.active_skills = list(args.skills)
+    if args.auto_skills:
+        cli.auto_skills = True
 
     if args.list_models:
         cli._model_items()

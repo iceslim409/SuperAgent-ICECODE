@@ -8,8 +8,8 @@ import type { ServerOptions } from "./server.js"
 export const ICECODE_SERVER_URL = "http://localhost:13210"
 
 /**
- * Conectare directă la serverul Python ICECODE (fără a porni un server TS separat).
- * Serverul Python trebuie să ruleze deja pe portul 13210.
+ * Connect directly to the ICECODE Python server (without starting a separate TS server).
+ * The Python server must already be running on port 13210.
  */
 export function connectToIcecode(options?: { baseUrl?: string }) {
   const baseUrl = options?.baseUrl ?? ICECODE_SERVER_URL
@@ -17,7 +17,7 @@ export function connectToIcecode(options?: { baseUrl?: string }) {
 }
 
 /**
- * Pornire server TS (OpenCode-mode). Folosiţi `connectToIcecode()` dacă folosiţi backend-ul Python.
+ * Start TS server (OpenCode-mode). Use `connectToIcecode()` if you are using the Python backend.
  */
 export async function createOpencode(options?: ServerOptions) {
   const server = await createOpencodeServer({
