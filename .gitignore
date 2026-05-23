@@ -46,3 +46,8 @@ out/
 *.log
 logs/
 .turbo/
+
+# Claude Code memory (personal)
+memory/
+packages/tools/tools
+packages/tools/icecode_tools/icecode_tools

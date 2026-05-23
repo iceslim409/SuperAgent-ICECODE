@@ -11,9 +11,9 @@ SERVER_DIR = packages/server
 CORE_DIR   = packages/core
 PORT       = 13210
 
-PYTHONPATH_EXPORT = PYTHONPATH="$(shell pwd)/packages/core:$(shell pwd)/packages/server"
+PYTHONPATH_EXPORT = PYTHONPATH="$(shell pwd)/packages/core:$(shell pwd)/packages/server:$(shell pwd)/packages/tools"
 
-.PHONY: help install run dev test test-unit test-integration clean stop logs docker-build docker-run docker-stop docker-logs docker-with-ollama
+.PHONY: help install run dev test test-unit test-integration clean stop logs debug docker-build docker-run docker-stop docker-logs docker-with-ollama
 
 help:
 	@echo ""
@@ -25,6 +25,7 @@ help:
 	@echo "  make test           — Run all tests"
 	@echo "  make test-unit      — Run unit tests only"
 	@echo "  make test-int       — Run integration tests only"
+	@echo "  make debug          — Auto-debug: verifică tot proiectul"
 	@echo "  make stop           — Kill running server"
 	@echo "  make logs           — Tail server logs"
 	@echo "  make clean          — Remove cache and build artifacts"
@@ -32,6 +33,9 @@ help:
 	@echo "  make docker-run     — Start via Docker Compose"
 	@echo "  make docker-stop    — Stop Docker containers"
 	@echo ""
+
+debug:
+	@bash debug.sh
 
 install:
 	@bash install.sh

@@ -36,6 +36,350 @@ def _load_computer_tools():
             logger.warning(f"Computer tools not available: {e}")
     return _COMPUTER_TOOLS, _exec_computer_tool
 
+
+# ── Extended tools from icecode_tools (Hermes) ────────────────────────────────
+
+def _load_extended_tools(skip_registry: bool = False) -> List[Dict]:
+    """Load additional tool schemas from packages/tools/icecode_tools."""
+    import sys as _sys
+    _tools_path = str(Path(__file__).parents[3] / "tools")
+    _cli_path   = str(Path(__file__).parents[3] / "cli")
+    _core_path  = str(Path(__file__).parents[2])
+    for p in (_tools_path, _cli_path, _core_path):
+        if p not in _sys.path:
+            _sys.path.insert(0, p)
+
+    extended: List[Dict] = []
+
+    _WANT = [
+        # (module_path, schema_attr)
+        ("tools.todo_tool",             "TODO_SCHEMA"),
+        ("tools.memory_tool",           "MEMORY_SCHEMA"),
+        ("tools.vision_tools",          "VISION_ANALYZE_SCHEMA"),
+        ("tools.vision_tools",          "VIDEO_ANALYZE_SCHEMA"),
+        ("tools.session_search_tool",   "SESSION_SEARCH_SCHEMA"),
+        ("tools.clarify_tool",          "CLARIFY_SCHEMA"),
+        ("tools.image_generation_tool", "IMAGE_GEN_SCHEMA"),
+        ("tools.video_generation_tool", "VIDEO_GEN_SCHEMA"),
+        ("tools.tts_tool",              "TTS_SCHEMA"),
+        ("tools.web_tools",             "WEB_SEARCH_SCHEMA"),
+        ("tools.web_tools",             "WEB_EXTRACT_SCHEMA"),
+        ("tools.file.file_tools",       "PATCH_SCHEMA"),
+        ("tools.file.file_tools",       "SEARCH_FILES_SCHEMA"),
+        ("tools.delegate_tool",         "DELEGATE_TASK_SCHEMA"),
+        ("tools.cronjob_tools",         "CRONJOB_SCHEMA"),
+        ("tools.homeassistant_tool",    "HA_LIST_ENTITIES_SCHEMA"),
+        ("tools.homeassistant_tool",    "HA_GET_STATE_SCHEMA"),
+        ("tools.homeassistant_tool",    "HA_LIST_SERVICES_SCHEMA"),
+        ("tools.homeassistant_tool",    "HA_CALL_SERVICE_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_SHOW_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_LIST_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_COMPLETE_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_BLOCK_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_COMMENT_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_CREATE_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_UNBLOCK_SCHEMA"),
+        ("tools.kanban_tools",          "KANBAN_LINK_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_LIST_ENVIRONMENTS_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_START_TRAINING_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_CHECK_STATUS_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_GET_RESULTS_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_EDIT_CONFIG_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_GET_CURRENT_CONFIG_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_STOP_TRAINING_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_LIST_RUNS_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_SELECT_ENVIRONMENT_SCHEMA"),
+        ("tools.rl_training_tool",      "RL_TEST_INFERENCE_SCHEMA"),
+        ("tools.discord_tool",          "DISCORD_SCHEMA"),
+        # Feishu / Lark integration
+        ("tools.feishu_doc_tool",       "FEISHU_DOC_READ_SCHEMA"),
+        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_LIST_COMMENTS_SCHEMA"),
+        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_LIST_REPLIES_SCHEMA"),
+        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_REPLY_SCHEMA"),
+        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_ADD_COMMENT_SCHEMA"),
+        # Multi-LLM mixture
+        ("tools.mixture_of_agents_tool","MOA_SCHEMA"),
+        # Skills management
+        ("tools.skills_tool",           "SKILLS_LIST_SCHEMA"),
+        ("tools.skills_tool",           "SKILL_VIEW_SCHEMA"),
+        ("tools.skill_manager_tool",    "SKILL_MANAGE_SCHEMA"),
+        # Process & code execution
+        ("tools.process_registry",      "PROCESS_SCHEMA"),
+    ]
+
+    seen_names = set()
+    import importlib as _il
+    for mod_path, attr in _WANT:
+        try:
+            mod = _il.import_module(mod_path)
+            schema = getattr(mod, attr, None)
+            if schema and schema.get("name") and schema["name"] not in seen_names:
+                extended.append({"type": "function", "function": schema})
+                seen_names.add(schema["name"])
+        except Exception as e:
+            logger.debug(f"Extended tool {attr} not loaded: {e}")
+
+    # Load browser tools (exported as a list, not individual schema attrs)
+    try:
+        browser_mod = _il.import_module("tools.browser_tool")
+        browser_schemas = getattr(browser_mod, "BROWSER_TOOL_SCHEMAS", [])
+        for schema in browser_schemas:
+            if isinstance(schema, dict):
+                # may already be wrapped in {"type":"function","function":{...}}
+                if "function" in schema:
+                    name = schema["function"].get("name", "")
+                    if name and name not in seen_names:
+                        extended.append(schema)
+                        seen_names.add(name)
+                elif schema.get("name") and schema["name"] not in seen_names:
+                    extended.append({"type": "function", "function": schema})
+                    seen_names.add(schema["name"])
+    except Exception as e:
+        logger.debug(f"Browser tools not loaded: {e}")
+
+    # Trigger import of registry-only modules to ensure they register themselves
+    _REGISTRY_ONLY_MODULES = [
+        "tools.yuanbao_tools",
+        "tools.send_message_tool",
+        "tools.code_execution_tool",
+        "tools.browser_cdp_tool",
+        "tools.browser_dialog_tool",
+        "tools.computer_use_tool",
+        "tools.mcp_tool",
+        "tools.terminal_tool",
+    ]
+    for mod_path in _REGISTRY_ONLY_MODULES:
+        try:
+            _il.import_module(mod_path)
+        except Exception as e:
+            logger.debug(f"Registry-only module {mod_path} not loaded: {e}")
+
+    # Load registry-registered tools, filtered by check_fn (skip if caller handles it)
+    if not skip_registry:
+        try:
+            from tools.registry import registry as _registry
+            for schema_entry in _registry.get_available_schemas():
+                name = schema_entry.get("function", {}).get("name", "")
+                if name and name not in seen_names:
+                    extended.append(schema_entry)
+                    seen_names.add(name)
+        except Exception as e:
+            logger.debug(f"Registry sweep not loaded: {e}")
+
+    logger.debug(f"Extended tools loaded: {len(extended)}")
+    return extended
+
+
+_STATIC_TOOLS_CACHE: Optional[List[Dict]] = None
+
+def _get_extended_tools() -> List[Dict]:
+    """Load extended tools. Static module tools are cached; registry tools re-checked each call."""
+    global _STATIC_TOOLS_CACHE
+
+    # Build static tools once (module imports are cached by Python anyway)
+    if _STATIC_TOOLS_CACHE is None:
+        _STATIC_TOOLS_CACHE = _load_extended_tools(skip_registry=True)
+
+    # Registry tools are checked fresh each time so check_fn filters correctly
+    try:
+        from tools.registry import registry as _reg
+        seen = {t["function"]["name"] for t in _STATIC_TOOLS_CACHE}
+        dynamic = [
+            s for s in _reg.get_available_schemas()
+            if s.get("function", {}).get("name") not in seen
+        ]
+    except Exception:
+        dynamic = []
+
+    return _STATIC_TOOLS_CACHE + dynamic
+
+
+# Tier 1 — always included for any action message (7 tools, ~1400 tokens)
+_CORE_TOOL_NAMES = frozenset({
+    "read_file", "write_file", "edit_file", "run_terminal", "list_dir",
+    "search_web", "web_fetch",
+})
+
+# Tier 2 — added when message is about code / file operations (+6 tools = 13 total)
+_CODE_KEYWORDS = frozenset({
+    "file", "code", "script", "function", "class", "import", "debug",
+    "error", "fix", "write", "read", "edit", "create", "delete", "move",
+    "git", "commit", "deploy", "build", "test", "refactor", "bug",
+    "framework", "library", "database", "backend", "frontend", "docker",
+    "container", "middleware", "package", "module", "dependency",
+    "fisier", "cod", "script", "baza de date",
+})
+_CODE_TOOL_NAMES = frozenset({
+    "delete_file", "move_file", "search_files", "code_search", "git_command", "patch",
+})
+
+# Domain groups — each group is only included when its keywords appear in the message.
+# Keywords use substring matching (supports multi-word phrases like "home assistant").
+# Tool names must match exactly what's registered/defined.
+_TOOL_KEYWORD_GROUPS: List[tuple] = [
+    # Tasks / Kanban — "task", "taskuri" etc. trigger this too, not just "kanban"
+    ({"kanban", "board", "sprint", "backlog",
+      "task", "tasks", "taskuri", "taskurile", "todo", "sarcina", "sarcini"},
+     {"kanban_show","kanban_list","kanban_complete","kanban_block","kanban_comment",
+      "kanban_create","kanban_unblock","kanban_link",
+      "create_task","list_tasks","update_task","set_goal","get_goals","todo"}),
+    # Memory / remember
+    ({"remember", "recall", "memory", "memorie", "aminteste", "retine"},
+     {"remember", "recall", "search_knowledge", "memory"}),
+    # Knowledge base / docs
+    ({"knowledge", "rag", "document", "docs", "documentation", "indexed"},
+     {"search_knowledge"}),
+    # Home Assistant / smart home
+    ({"home assistant", "smart home", "hass", "sensor", "thermostat", "light",
+      "automation", "switch", "climate"},
+     {"ha_list_entities","ha_get_state","ha_list_services","ha_call_service"}),
+    # RL training
+    ({"reinforcement", "rl training", "gym", "training run", "rl_"},
+     {"rl_list_environments","rl_start_training","rl_check_status","rl_get_results",
+      "rl_edit_config","rl_get_current_config","rl_stop_training","rl_list_runs",
+      "rl_select_environment","rl_test_inference"}),
+    # Feishu / Lark
+    ({"feishu", "lark", "飞书"},
+     {"feishu_doc_read","feishu_drive_list_comments","feishu_drive_list_comment_replies",
+      "feishu_drive_reply_comment","feishu_drive_add_comment"}),
+    # Browser / web automation
+    ({"browser", "screenshot", "navigate", "click", "scroll", "webpage", "chromium",
+      "playwright", "puppeteer", "cdp", "dialog"},
+     {"browser_navigate","browser_snapshot","browser_click","browser_type",
+      "browser_scroll","browser_back","browser_press","browser_get_images",
+      "browser_vision","browser_console","browser_fetch","web_extract",
+      "browser_cdp","browser_dialog"}),
+    # Computer use / desktop automation
+    ({"computer use", "desktop", "mouse", "keyboard", "screen", "gui", "automate desktop"},
+     {"computer_use"}),
+    # Images
+    ({"image", "photo", "picture", "generate image", "dall", "midjourney", "imagine"},
+     {"image_generate", "vision_analyze"}),
+    # Video
+    ({"video", "mp4", "generate video", "analyze video"},
+     {"video_generate", "video_analyze"}),
+    # Speech / TTS
+    ({"speech", "tts", "text to speech", "audio", "voice", "speak"},
+     {"text_to_speech"}),
+    # Messaging
+    ({"telegram", "discord", "slack", "whatsapp", "send message", "notify",
+      "mesaj", "notificare"},
+     {"send_message", "discord"}),
+    # Skills management
+    ({"skill", "teach", "learn skill", "add skill", "abilitate"},
+     {"skills_list", "skill_view", "skill_manage"}),
+    # Multi-agent / delegation
+    ({"delegate", "multi-agent", "swarm", "sub-agent", "orchestrate"},
+     {"delegate_task", "delegate_to_agent", "mixture_of_agents"}),
+    # Code execution / sandbox
+    ({"execute code", "run code", "python exec", "sandbox", "executa cod"},
+     {"execute_code", "process"}),
+    # HTTP / REST API calls
+    ({"api", "http request", "rest api", "webhook", "endpoint", "curl"},
+     {"http_request"}),
+    # Session / conversation history
+    ({"session", "history", "past conversation", "conversatie anterioara"},
+     {"session_search"}),
+    # Cron / scheduling
+    ({"cron", "schedule", "recurring", "programeaza", "planifica"},
+     {"cronjob"}),
+    # Yuanbao
+    ({"yuanbao"},
+     {"yb_query_group_info","yb_query_group_members","yb_send_dm",
+      "yb_search_sticker","yb_send_sticker"}),
+]
+
+
+# Punctuation + hyphen normalizer: "codul?" → "codul", "fa-mi" → "fa mi", "script-ul" → "script ul"
+_PUNCT_TRANS = str.maketrans("?!,.:;()[]{}\"'/\\-–—", "                   ")
+
+def _tokenize(text: str) -> set:
+    """Split text into words, stripping punctuation so 'codul?' matches 'codul'."""
+    return set(text.lower().translate(_PUNCT_TRANS).split())
+
+
+_ACTION_KEYWORDS = {
+    # English action verbs (whole words)
+    "read", "write", "create", "delete", "move", "run", "execute", "fix", "debug",
+    "search", "find", "fetch", "edit", "install", "deploy", "build", "test",
+    "generate", "analyze", "scan", "open", "show", "list", "check", "make",
+    # Romanian action verbs — "fa" safe (word-boundary: "faci"≠"fa"; "fa-mi"→"fa mi")
+    "fa", "citeste", "scrie", "creeaza", "creez", "construieste", "construiesc",
+    "sterge", "muta", "ruleaza", "cauta", "arata", "afiseaza", "listeaza",
+    "modifica", "verifica", "descarca", "compileaza", "instaleaza", "instala",
+    "porneste", "opreste", "adauga", "pune", "trimite", "trimit",
+    "implementeaza", "implementez", "dezvolta", "dezvolt", "repara",
+    # Romanian object nouns — WITH and WITHOUT article (fisier + fisierul etc.)
+    "fisier", "fisierul", "cod", "codul", "script", "scriptul",
+    "proiect", "proiectul", "director", "directorul", "folder", "folderul",
+    "server", "serverul", "aplicatie", "aplicatia", "pagina", "site",
+    "baza", "bot", "api", "eroare", "problema", "functie", "clasa",
+}
+
+
+def _needs_tools(message: str) -> bool:
+    """Return True if this message likely requires tool use."""
+    if len(message) > 80:
+        return True
+    msg_lower = message.lower()
+    # Punctuation-normalized word-boundary match (no substring false-positives)
+    words = _tokenize(msg_lower)
+    if words & _ACTION_KEYWORDS:
+        return True
+    # Code/file keyword present anywhere in message (handles "cu codul", "script-ul")
+    if any(kw in msg_lower for kw in _CODE_KEYWORDS):
+        return True
+    # Domain keyword match (multi-word phrases like "home assistant" supported)
+    for keywords, _ in _TOOL_KEYWORD_GROUPS:
+        if any(kw in msg_lower for kw in keywords):
+            return True
+    return False
+
+
+def _is_pure_greeting(message: str) -> bool:
+    """Return True only for very short, clearly conversational messages with NO task intent."""
+    if len(message) > 50:
+        return False
+    words = _tokenize(message.lower())
+    # Any known action/code/domain keyword → not a pure greeting
+    if words & _ACTION_KEYWORDS:
+        return False
+    if any(kw in message.lower() for kw in _CODE_KEYWORDS):
+        return False
+    for keywords, _ in _TOOL_KEYWORD_GROUPS:
+        if any(kw in message.lower() for kw in keywords):
+            return False
+    return True
+
+
+def _select_tools_for_message(message: str, all_tools: List[Dict]) -> List[Dict]:
+    """Return the tools relevant to this message.
+    Core tools (7) are ALWAYS included unless the message is a pure short greeting.
+    Domain tools are added when their keywords appear.
+    Code tools are added when code/file keywords appear.
+    """
+    msg_lower = message.lower()
+    words = _tokenize(msg_lower)
+
+    # Pure short greetings: "salut", "buna ziua", "ok", "multumesc" → 0 tools, pure chat
+    if _is_pure_greeting(message):
+        return []
+
+    # Core tools always included (mirrors icecode1 — agents always have tools available)
+    selected_names: set = set(_CORE_TOOL_NAMES)
+
+    # Code tier: added when message mentions code/file work
+    if any(kw in msg_lower for kw in _CODE_KEYWORDS) or (words & _CODE_KEYWORDS):
+        selected_names |= _CODE_TOOL_NAMES
+
+    # Domain tools: added when their keyword groups match
+    for keywords, tool_names in _TOOL_KEYWORD_GROUPS:
+        if any(kw in msg_lower for kw in keywords):
+            selected_names |= tool_names
+
+    return [t for t in all_tools if t.get("function", {}).get("name") in selected_names]
+
+
 # ── Tool definitions ──────────────────────────────────────────────────────────
 
 TOOLS: List[Dict] = [
@@ -102,7 +446,7 @@ TOOLS: List[Dict] = [
         "type": "function",
         "function": {
             "name": "web_fetch",
-            "description": "Fetch a URL and return its text content.",
+            "description": "Fetch the content of a KNOWN URL and return its text. Use this only when you already have a specific URL from search results. Do NOT guess URLs.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -117,11 +461,11 @@ TOOLS: List[Dict] = [
         "type": "function",
         "function": {
             "name": "search_web",
-            "description": "Search the web using DuckDuckGo and return top results.",
+            "description": "Search the internet using DuckDuckGo. Use this FIRST to find information online — train schedules, prices, news, recipes, anything. Returns real URLs and summaries. Always use search_web before web_fetch.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string"},
+                    "query": {"type": "string", "description": "Search query (can be in any language)"},
                     "max_results": {"type": "integer", "description": "Number of results (default 5)"},
                 },
                 "required": ["query"],
@@ -273,6 +617,105 @@ TOOLS: List[Dict] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "edit_file",
+            "description": "Edit a file by replacing a specific text section with new content. Safer than write_file — only changes what you specify. Use for targeted code edits.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "File path to edit"},
+                    "old_text": {"type": "string", "description": "Exact text to find and replace (must be unique in the file)"},
+                    "new_text": {"type": "string", "description": "New text to replace it with"},
+                    "replace_all": {"type": "boolean", "description": "Replace all occurrences (default false — only first)"},
+                },
+                "required": ["path", "old_text", "new_text"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_file",
+            "description": "Delete a file or empty directory from disk.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "File or directory path to delete"},
+                    "recursive": {"type": "boolean", "description": "Delete directory and all its contents (default false)"},
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "move_file",
+            "description": "Move or rename a file or directory.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "src": {"type": "string", "description": "Source path"},
+                    "dst": {"type": "string", "description": "Destination path"},
+                },
+                "required": ["src", "dst"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "http_request",
+            "description": "Make an HTTP request to any API endpoint. Use for REST APIs, webhooks, or any HTTP service.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "method": {"type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"], "description": "HTTP method"},
+                    "url": {"type": "string", "description": "Full URL to request"},
+                    "headers": {"type": "object", "description": "Optional request headers as key-value pairs"},
+                    "body": {"type": "object", "description": "Optional JSON body for POST/PUT/PATCH"},
+                    "params": {"type": "object", "description": "Optional URL query parameters"},
+                    "timeout": {"type": "integer", "description": "Timeout in seconds (default 15)"},
+                },
+                "required": ["method", "url"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "git_command",
+            "description": "Run a git command in a repository. Use for status, diff, log, add, commit, push, pull, branch, etc.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "Git subcommand and args (e.g. 'status', 'diff HEAD', 'log --oneline -10', 'add .', 'commit -m \"msg\"')"},
+                    "cwd": {"type": "string", "description": "Repository path (default: current dir)"},
+                },
+                "required": ["command"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "code_search",
+            "description": "Search for a pattern or text across files in a directory using grep. Great for finding function definitions, usages, imports, TODOs.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pattern": {"type": "string", "description": "Text or regex pattern to search for"},
+                    "path": {"type": "string", "description": "Directory to search in (default: current dir)"},
+                    "file_pattern": {"type": "string", "description": "Glob to filter files (e.g. '*.py', '*.ts', '*.js')"},
+                    "case_sensitive": {"type": "boolean", "description": "Case-sensitive search (default false)"},
+                    "max_results": {"type": "integer", "description": "Max lines to return (default 50)"},
+                },
+                "required": ["pattern"],
+            },
+        },
+    },
 ]
 
 
@@ -337,17 +780,18 @@ async def _exec_tool(name: str, args: Dict) -> str:
         elif name == "search_web":
             query = args["query"]
             max_results = min(args.get("max_results", 5), 10)
-            url = f"https://html.duckduckgo.com/html/?q={httpx.URL(query).query}"
-            async with httpx.AsyncClient(follow_redirects=True, timeout=10) as client:
-                resp = await client.get(
-                    "https://html.duckduckgo.com/html/",
-                    params={"q": query},
-                    headers={"User-Agent": "Mozilla/5.0"},
-                )
-                import re
-                results = re.findall(r'<a class="result__a"[^>]*href="([^"]+)"[^>]*>([^<]+)</a>', resp.text)
-                lines = [f"{i+1}. {title.strip()} — {url}" for i, (url, title) in enumerate(results[:max_results])]
-                return "\n".join(lines) or "No results found"
+            try:
+                from ddgs import DDGS
+                with DDGS() as ddgs:
+                    hits = list(ddgs.text(query, max_results=max_results))
+                if not hits:
+                    return "No results found"
+                lines = []
+                for i, h in enumerate(hits, 1):
+                    lines.append(f"{i}. {h['title']}\n   {h['href']}\n   {h.get('body','')[:200]}")
+                return "\n\n".join(lines)
+            except Exception as e:
+                return f"Search failed: {e}"
 
         elif name == "remember":
             mem_dir = Path.home() / ".icecode" / "agent_memory"
@@ -520,12 +964,164 @@ async def _exec_tool(name: str, args: Dict) -> str:
             except Exception as e:
                 return f"Delegation error: {e}"
 
+        elif name == "edit_file":
+            p = Path(args["path"]).expanduser()
+            if not p.exists():
+                return f"Error: file not found: {args['path']}"
+            content = p.read_text(errors="replace")
+            old_text = args["old_text"]
+            new_text = args["new_text"]
+            if old_text not in content:
+                return f"Error: text not found in {args['path']}. Make sure old_text matches exactly (including whitespace)."
+            count = content.count(old_text)
+            if args.get("replace_all"):
+                new_content = content.replace(old_text, new_text)
+                replaced = count
+            else:
+                new_content = content.replace(old_text, new_text, 1)
+                replaced = 1
+            p.write_text(new_content)
+            return f"Edited {args['path']}: replaced {replaced} occurrence(s). File is now {len(new_content)} chars."
+
+        elif name == "delete_file":
+            import shutil as _shutil
+            p = Path(args["path"]).expanduser()
+            if not p.exists():
+                return f"Error: path not found: {args['path']}"
+            if p.is_dir():
+                if args.get("recursive"):
+                    _shutil.rmtree(p)
+                    return f"Deleted directory (recursive): {p}"
+                else:
+                    try:
+                        p.rmdir()
+                        return f"Deleted empty directory: {p}"
+                    except OSError:
+                        return f"Error: directory not empty. Use recursive=true to delete with contents."
+            else:
+                p.unlink()
+                return f"Deleted file: {p}"
+
+        elif name == "move_file":
+            import shutil as _shutil
+            src = Path(args["src"]).expanduser()
+            dst = Path(args["dst"]).expanduser()
+            if not src.exists():
+                return f"Error: source not found: {args['src']}"
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            _shutil.move(str(src), str(dst))
+            return f"Moved: {src} → {dst}"
+
+        elif name == "http_request":
+            method = args["method"].upper()
+            url = args["url"]
+            headers = args.get("headers") or {}
+            body = args.get("body")
+            params = args.get("params")
+            timeout = args.get("timeout", 15)
+            async with httpx.AsyncClient(follow_redirects=True, timeout=timeout) as client:
+                resp = await client.request(
+                    method, url,
+                    headers=headers,
+                    json=body,
+                    params=params,
+                )
+                try:
+                    data = resp.json()
+                    body_str = json.dumps(data, indent=2, ensure_ascii=False)[:3000]
+                except Exception:
+                    body_str = resp.text[:3000]
+                return (f"HTTP {method} {url}\n"
+                        f"Status: {resp.status_code}\n"
+                        f"Headers: {dict(resp.headers)}\n\n"
+                        f"{body_str}")
+
+        elif name == "git_command":
+            cwd = args.get("cwd") or os.getcwd()
+            git_cmd = f"git {args['command']}"
+            result = subprocess.run(
+                git_cmd, shell=True, cwd=cwd,
+                capture_output=True, text=True, timeout=30,
+            )
+            out = (result.stdout or "").strip()
+            err = (result.stderr or "").strip()
+            parts = []
+            if out:
+                parts.append(out[-3000:])
+            if err:
+                parts.append(f"[stderr] {err[-1000:]}")
+            parts.append(f"[exit {result.returncode}]")
+            return "\n".join(parts)
+
+        elif name == "code_search":
+            pattern = args["pattern"]
+            search_path = args.get("path", ".")
+            file_pat = args.get("file_pattern", "")
+            case_flag = "" if args.get("case_sensitive") else "-i"
+            max_results = args.get("max_results", 50)
+            include = f"--include='{file_pat}'" if file_pat else ""
+            cmd = f"grep -rn {case_flag} {include} '{pattern}' '{search_path}' 2>/dev/null | head -{max_results}"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
+            out = result.stdout.strip()
+            if not out:
+                return f"No matches found for '{pattern}' in {search_path}"
+            lines = out.split("\n")
+            suffix = f"\n... ({len(lines)} results shown, use max_results to see more)" if len(lines) >= max_results else ""
+            return out + suffix
+
         else:
-            return f"Unknown tool: {name}"
+            # Try routing to extended icecode_tools (Hermes tools)
+            return await _exec_extended_tool(name, args)
+
     except subprocess.TimeoutExpired:
         return "Error: command timed out after 30s"
     except Exception as e:
         return f"Tool error ({name}): {type(e).__name__}: {e}"
+
+
+async def _exec_extended_tool(name: str, args: Dict) -> str:
+    """Route tool calls to icecode_tools (Hermes) registry handlers."""
+    import sys as _sys
+    _tools_path = str(Path(__file__).parents[4] / "tools")
+    if _tools_path not in _sys.path:
+        _sys.path.insert(0, _tools_path)
+
+    try:
+        from tools.registry import registry
+        tool = registry.get(name)
+        if tool:
+            handler = tool.get("handler") or tool.get("func")
+            if handler:
+                result = handler(args)
+                return result if isinstance(result, str) else json.dumps(result, ensure_ascii=False, default=str)
+    except Exception as e:
+        logger.debug(f"Extended tool {name} registry call failed: {e}")
+
+    # Fallback: try direct module import patterns
+    _DIRECT_MAP = {
+        "todo":           ("tools.todo_tool",    "todo_tool"),
+        "memory":         ("tools.memory_tool",  "memory_tool"),
+        "vision_analyze": ("tools.vision_tools", "vision_analyze"),
+        "session_search": ("tools.session_search_tool", "session_search"),
+        "clarify":        ("tools.clarify_tool", "clarify_tool"),
+    }
+    if name in _DIRECT_MAP:
+        try:
+            import importlib as _il
+            mod_path, func_name = _DIRECT_MAP[name]
+            mod = _il.import_module(mod_path)
+            func = getattr(mod, func_name, None)
+            if func:
+                import asyncio
+                if asyncio.iscoroutinefunction(func):
+                    result = await func(**args)
+                else:
+                    result = func(**args)
+                return result if isinstance(result, str) else json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as e:
+            return f"Tool {name} error: {e}"
+
+    return f"Unknown tool: {name}"
 
 
 # ── Provider config ────────────────────────────────────────────────────────────
@@ -561,7 +1157,39 @@ def _get_client_config(model: str, provider: str, base_url: Optional[str] = None
             "model": model,
         }
 
-    # Default: Ollama (no cloud keys)
+    # Cloud providers — look up API key and base_url from providers.json
+    _CLOUD_DEFAULTS = {
+        "openai":      {"base_url": "https://api.openai.com/v1"},
+        "anthropic":   {"base_url": "https://api.anthropic.com/v1"},
+        "groq":        {"base_url": "https://api.groq.com/openai/v1"},
+        "openrouter":  {"base_url": "https://openrouter.ai/api/v1"},
+        "together":    {"base_url": "https://api.together.xyz/v1"},
+        "deepseek":    {"base_url": "https://api.deepseek.com/v1"},
+        "mistral":     {"base_url": "https://api.mistral.ai/v1"},
+        "google":      {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai"},
+    }
+    if provider in _CLOUD_DEFAULTS:
+        try:
+            from pathlib import Path
+            import json as _json
+            providers_file = Path.home() / ".icecode" / "data" / "providers.json"
+            stored = _json.loads(providers_file.read_text()) if providers_file.exists() else []
+            found = next((p for p in stored if p.get("id") == provider), None)
+            api_key = found.get("api_key", "") if found else ""
+            configured_base = found.get("base_url") if found else None
+        except Exception:
+            api_key = ""
+            configured_base = None
+
+        base_url = configured_base or _CLOUD_DEFAULTS[provider]["base_url"]
+        if api_key:
+            return {
+                "base_url": base_url,
+                "api_key": api_key,
+                "model": model,
+            }
+
+    # Default: Ollama (no cloud keys configured)
     return {
         "base_url": "http://localhost:11434/v1",
         "api_key": "ollama",
@@ -604,24 +1232,35 @@ class UsageTracker:
 
 # ── Main Agent class ────────────────────────────────────────────────────────────
 
-SYSTEM_PROMPT = """You are ICECODE — an advanced AI super-agent with tool-calling capabilities.
+SYSTEM_PROMPT = """You are ICECODE, a helpful AI assistant and coding agent.
+{tools_note}
+Current date: {date}
+Working directory: {cwd}
+"""
 
-You can:
-- Read and write files on the user's system
-- Run terminal commands
-- Search the web and fetch URLs
-- Remember facts across sessions (use `remember` + `recall`)
-- Create complete projects, write code, debug, research
+SYSTEM_PROMPT_WITH_TOOLS = """You are ICECODE — an advanced AI coding agent with tool-calling capabilities.
 
+You can read/write files, run terminal commands, search the web, and more.
 Guidelines:
-- Think step-by-step. Break complex tasks into sub-tasks.
-- Use tools proactively — don't just describe, actually do.
-- After completing a task, store lessons learned with `remember`.
+- Think step-by-step. Use tools proactively — don't just describe, actually do it.
 - Be concise in text but thorough in actions.
-- When creating a project: plan → scaffold → implement → test → summarize.
 
 Current date: {date}
 Working directory: {cwd}
+"""
+
+AUTOPILOT_EXTRA = """
+🤖 AUTOPILOT MODE — ACTIVE
+
+You are running in fully autonomous mode. The user has explicitly given you permission to:
+- Execute all steps without asking for confirmation
+- Make reasonable decisions independently when facing choices
+- Create files, run commands, search the web — all without pausing
+- If something is unclear, pick the most reasonable option and continue
+- Only stop and ask if you hit a hard blocker (missing credential, impossible requirement)
+- Aim for the BEST solution, not just a working one: structure code well, add error handling, test it
+
+Work autonomously from start to finish. Report what you did at the end, not during.
 """
 
 
@@ -636,19 +1275,21 @@ class ICECodeAgent:
         max_iterations: int = 10,
         session_id: Optional[str] = None,
         enable_computer: bool = False,
+        autopilot: bool = False,
         system_extra: str = "",
     ):
         self.model = model
         self.provider = provider or "ollama"
         self.base_url = base_url
-        self.max_iterations = max_iterations
+        self.max_iterations = max_iterations if not autopilot else max(max_iterations, 30)
         self.session_id = session_id or f"s_{uuid.uuid4().hex[:8]}"
         self.history: List[Dict] = []
         self.usage = UsageTracker()
         self.enable_computer = enable_computer
+        self.autopilot = autopilot
         self.system_extra = system_extra
 
-    def _system(self) -> str:
+    def _system(self, has_tools: bool = True) -> str:
         extra = ""
 
         # Inject active goals
@@ -668,23 +1309,22 @@ class ICECodeAgent:
 
         if self.enable_computer:
             extra += (
-                "\n\nCOMPUTER CONTROL ENABLED:\n"
-                "You can also control the desktop:\n"
-                "- screenshot: see the screen\n"
-                "- click: click at coordinates\n"
-                "- type_text: type keyboard input\n"
-                "- hotkey: press key combos\n"
-                "- open_app: launch applications\n"
-                "- scroll, move_mouse, focus_window\n"
-                "Always screenshot first to understand the current screen state before clicking.\n"
-                "You are fully autonomous — complete tasks without user intervention.\n"
+                "\n\nCOMPUTER CONTROL ENABLED: You can control the desktop via screenshot, click, type_text, hotkey, open_app, scroll tools."
             )
+        if self.autopilot:
+            extra += AUTOPILOT_EXTRA
         if self.system_extra:
             extra += f"\n\n{self.system_extra}"
-        return SYSTEM_PROMPT.format(
-            date=datetime.now().strftime("%Y-%m-%d %H:%M"),
-            cwd=os.getcwd(),
-        ) + extra
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        cwd = os.getcwd()
+        if has_tools:
+            return SYSTEM_PROMPT_WITH_TOOLS.format(date=now, cwd=cwd) + extra
+        else:
+            tools_note = ""
+            if extra:
+                return SYSTEM_PROMPT.format(date=now, cwd=cwd, tools_note=extra)
+            return SYSTEM_PROMPT.format(date=now, cwd=cwd, tools_note="")
 
     async def stream(self, user_message: str) -> AsyncGenerator[Dict, None]:
         """Stream chunks: {type: session|text|tool_call|tool_result|usage|done|error}"""
@@ -692,8 +1332,17 @@ class ICECodeAgent:
 
         yield {"type": "session", "session_id": self.session_id}
 
-        # Build active tool list
-        active_tools = list(TOOLS)
+        # Build active tool list: core + extended (Hermes) + computer
+        all_tools_pool = list(TOOLS)
+        extended = _get_extended_tools()
+        core_names = {t["function"]["name"] for t in all_tools_pool}
+        for ext in extended:
+            if ext["function"]["name"] not in core_names:
+                all_tools_pool.append(ext)
+
+        # Select only tools relevant to this message (reduces prompt tokens 80%+)
+        active_tools = _select_tools_for_message(user_message, all_tools_pool)
+
         computer_exec = None
         if self.enable_computer:
             computer_tool_defs, computer_exec = _load_computer_tools()
@@ -714,17 +1363,34 @@ class ICECodeAgent:
         # Trim history to last N exchanges to avoid context overflow on small models.
         # Keep system prompt (injected separately) + last 12 messages = ~6 exchanges.
         trimmed = self.history[-12:] if len(self.history) > 12 else self.history
-        messages = [{"role": "system", "content": self._system()}] + trimmed
+        messages = [{"role": "system", "content": self._system(has_tools=bool(active_tools))}] + trimmed
 
-        # Ollama performance options: limit context window + disable thinking for qwen3/deepseek-r1
+        # Ollama performance options + per-model capability flags
         _ollama_extra: Dict = {}
+        model_lower = actual_model.lower()
+
+        # Models that do NOT support function calling / tools
+        _NO_TOOLS = ("deepseek-r1", "deepseek-r1-distill", "qwq", "deepseek-v2.5")
+        supports_tools = not any(x in model_lower for x in _NO_TOOLS)
+
         if is_ollama:
-            opts: Dict = {"num_ctx": 8192, "num_predict": 2048}
-            model_lower = actual_model.lower()
-            # Disable extended thinking for models that support /no_think
-            if any(x in model_lower for x in ("qwen3", "deepseek-r1", "qwq")):
+            # Large models (7B+) unload after 2 min to free RAM; others stay 5 min
+            _is_large = any(x in model_lower for x in (":7b", ":8b", ":13b", ":14b", ":70b",
+                                                        "mistral:7b", "llama3:8b", "llama3.1:8b"))
+            _keep_alive = "2m" if _is_large else "5m"
+            # Let Ollama auto-size num_ctx for the actual input (setting it explicitly
+            # forces pre-allocation of the full KV cache, causing 30-50s prefill on CPU)
+            opts: Dict = {"keep_alive": _keep_alive}
+            # qwen3 supports think:false via options; deepseek-r1 needs /no_think in message
+            if any(x in model_lower for x in ("qwen3", "qwq")):
                 opts["think"] = False
             _ollama_extra = {"extra_body": {"options": opts}}
+
+        # For deepseek-r1: append /no_think to suppress chain-of-thought output
+        if is_ollama and "deepseek-r1" in model_lower:
+            last = messages[-1] if messages else None
+            if last and last.get("role") == "user":
+                messages = messages[:-1] + [{"role": "user", "content": last["content"] + "\n/no_think"}]
 
         self.usage.iterations = 0
 
@@ -737,17 +1403,21 @@ class ICECodeAgent:
                     full_text = ""
                     tool_calls_raw: Dict[int, Dict] = {}
 
+                    _tool_kwargs = (
+                        {"tools": active_tools, "tool_choice": "auto"}
+                        if supports_tools and active_tools else {}
+                    )
                     stream = await client.chat.completions.create(
                         model=actual_model,
                         messages=messages,
-                        tools=active_tools,
-                        tool_choice="auto",
                         stream=True,
                         temperature=0.3,
                         stream_options={"include_usage": True},
+                        **_tool_kwargs,
                         **_ollama_extra,
                     )
 
+                    _in_thinking = False
                     async for chunk in stream:
                         # Usage chunk (Ollama sends a final chunk with empty choices)
                         if hasattr(chunk, "usage") and chunk.usage:
@@ -757,8 +1427,19 @@ class ICECodeAgent:
                         if not delta:
                             continue
 
-                        # Text content
+                        # Handle reasoning/thinking field (deepseek-r1, qwq)
+                        reasoning = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+                        if reasoning:
+                            if not _in_thinking:
+                                _in_thinking = True
+                                yield {"type": "thinking_start"}
+                            yield {"type": "thinking", "content": reasoning}
+
+                        # Text content — marks end of thinking phase
                         if delta.content:
+                            if _in_thinking:
+                                _in_thinking = False
+                                yield {"type": "thinking_end"}
                             full_text += delta.content
                             yield {"type": "text", "content": delta.content}
 
@@ -786,17 +1467,27 @@ class ICECodeAgent:
                     full_text = ""
                     tool_calls_raw = {}
 
+                    _tool_kwargs2 = (
+                        {"tools": active_tools, "tool_choice": "auto"}
+                        if supports_tools and active_tools else {}
+                    )
                     resp = await client.chat.completions.create(
                         model=actual_model,
                         messages=messages,
-                        tools=active_tools,
-                        tool_choice="auto",
                         stream=False,
                         temperature=0.3,
+                        **_tool_kwargs2,
                     )
                     choice = resp.choices[0]
-                    if choice.message.content:
-                        full_text = choice.message.content
+                    # Check both content and reasoning fields (deepseek-r1/qwq)
+                    msg = choice.message
+                    _reasoning = getattr(msg, "reasoning", None) or getattr(msg, "reasoning_content", None)
+                    _content = msg.content or ""
+                    if _reasoning and not _content:
+                        full_text = _reasoning
+                    elif _content:
+                        full_text = _content
+                    if full_text:
                         yield {"type": "text", "content": full_text}
                     if choice.message.tool_calls:
                         for tc in choice.message.tool_calls:
@@ -859,7 +1550,23 @@ class ICECodeAgent:
 
         except Exception as e:
             logger.error(f"Agent error: {e}")
-            yield {"type": "error", "content": str(e)}
+            err_str = str(e)
+            # Friendly messages for common cloud API errors
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                msg = "⚠ Quota depășită (429). "
+                if "gemini-2.5-pro" in err_str or "gemini-2.5-pro" in (self.model or ""):
+                    msg += "gemini-2.5-pro a atins limita free tier pentru azi. Folosește **gemini-2.5-flash** sau **gemini-2.0-flash** — au cotă mult mai mare."
+                elif "gemini" in err_str.lower():
+                    msg += "Limita Google Gemini free tier atinsă. Încearcă gemini-2.5-flash sau gemini-2.0-flash."
+                else:
+                    msg += "Limita API atinsă. Încearcă alt model sau așteaptă resetarea cotei."
+                yield {"type": "error", "content": msg}
+            elif "401" in err_str or "authentication" in err_str.lower() or "api_key" in err_str.lower():
+                yield {"type": "error", "content": "⚠ API key invalid sau lipsă. Verifică Settings → Providers."}
+            elif "does not support tools" in err_str:
+                yield {"type": "error", "content": f"⚠ Modelul {self.model} nu suportă tool-uri. Selectează alt model."}
+            else:
+                yield {"type": "error", "content": err_str}
 
         yield {"type": "done"}
 

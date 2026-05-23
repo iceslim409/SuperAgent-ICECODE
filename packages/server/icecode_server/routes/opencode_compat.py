@@ -1,8 +1,8 @@
 """
-OpenCode-compatible API layer — expune rutele pe care SDK-ul TypeScript le aşteaptă.
+OpenCode-compatible API layer — exposes the routes that the TypeScript SDK expects.
 
-Formatul: /session, /session/{id}/message, /provider, /config, /global/event
-Acestea mapează la engine-ul Python existent.
+Format: /session, /session/{id}/message, /provider, /config, /global/event
+These map to the existing Python engine.
 """
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ def _parts_to_text(parts: List[Dict[str, Any]]) -> str:
 
 
 async def _sse_compat_stream(session_id: str, message: str, model_info: Optional[Dict] = None):
-    """Rulează agentul Python şi emite events în formatul OpenCode."""
+    """Run the Python agent and emit events in OpenCode format."""
     from icecode.agent.core import ICECodeAgent, get_session_store
 
     store = get_session_store()
@@ -83,7 +83,7 @@ async def _sse_compat_stream(session_id: str, message: str, model_info: Optional
     msg_id = f"msg_{uuid.uuid4().hex[:8]}"
     assistant_msg_id = f"msg_{uuid.uuid4().hex[:8]}"
 
-    # Confirmăm că mesajul a fost primit
+    # Acknowledge message receipt
     yield f"data: {json.dumps({'type': 'session.updated', 'properties': {'id': session_id}})}\n\n"
 
     full_text = ""
@@ -179,7 +179,7 @@ async def _sse_compat_stream(session_id: str, message: str, model_info: Optional
 
 @router.get("/session")
 async def list_sessions():
-    """Listează toate sesiunile."""
+    """List all sessions."""
     from icecode.agent.core import get_session_store
     store = get_session_store()
     sessions = store.list() if hasattr(store, "list") else []
@@ -191,14 +191,14 @@ async def list_sessions():
 
 @router.post("/session")
 async def create_session(body: SessionCreateBody = None):
-    """Creează o sesiune nouă."""
+    """Create a new session."""
     session_id = f"ses_{uuid.uuid4().hex[:8]}"
     return _make_session(session_id, body.title if body else None)
 
 
 @router.get("/session/{session_id}")
 async def get_session(session_id: str):
-    """Returnează o sesiune după ID."""
+    """Return a session by ID."""
     from icecode.agent.core import get_session_store
     store = get_session_store()
     existing = store.load(session_id)
@@ -218,7 +218,7 @@ async def delete_session(session_id: str):
 
 @router.get("/session/{session_id}/message")
 async def list_messages(session_id: str):
-    """Listează mesajele unei sesiuni."""
+    """List messages in a session."""
     from icecode.agent.core import get_session_store
     store = get_session_store()
     existing = store.load(session_id)
@@ -237,7 +237,7 @@ async def list_messages(session_id: str):
 
 @router.post("/session/{session_id}/message")
 async def send_message(session_id: str, body: MessagePromptBody, request: Request):
-    """Trimite un mesaj şi streamează răspunsul (SSE)."""
+    """Send a message and stream the response (SSE)."""
     text = _parts_to_text(body.parts)
     if not text:
         raise HTTPException(status_code=400, detail="No text content in parts")
@@ -256,7 +256,7 @@ async def send_message(session_id: str, body: MessagePromptBody, request: Reques
 
 @router.post("/session/{session_id}/abort")
 async def abort_session(session_id: str):
-    """Opreşte generarea curentă."""
+    """Stop the current generation."""
     return {"ok": True}
 
 
@@ -267,7 +267,7 @@ async def revert_session(session_id: str):
 
 @router.get("/provider")
 async def list_providers():
-    """Listează providerii disponibili."""
+    """List available providers."""
     providers = []
     provider_list = [
         ("anthropic", "Anthropic", ["claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5"]),
@@ -296,7 +296,7 @@ async def list_provider_auth():
 
 @router.get("/config")
 async def get_config():
-    """Returnează configuraţia curentă."""
+    """Return the current configuration."""
     return {
         "version": "2.0.0",
         "theme": "dark",

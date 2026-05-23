@@ -34,12 +34,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
 /* ── Sidebar ── */
-.logo{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#000;font-weight:900;flex-shrink:0}
 .logo-text h1{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.5px}
 .logo-text span{font-size:10px;color:var(--text3);display:block}
-nav{flex:1;padding:6px 0;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;color:var(--text2);border-radius:6px;margin:1px 6px;transition:all .12s;font-size:13px;user-select:none}
+nav{flex:1;padding:4px 0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent}
+.nav-item{display:flex;align-items:center;gap:8px;padding:5px 10px;cursor:pointer;color:var(--text2);border-radius:6px;margin:1px 6px;transition:all .12s;font-size:12px;user-select:none}
 .nav-item:hover{background:var(--bg3);color:var(--text)}
 .nav-item.active{background:rgba(88,166,255,.12);color:var(--accent)}
 .nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
@@ -200,6 +200,11 @@ code:not(.hljs){background:var(--bg3);padding:1px 5px;border-radius:3px;font-siz
 .msg-bubble h1,.msg-bubble h2,.msg-bubble h3{margin:8px 0 4px;font-size:1em}
 .msg-usage{font-size:10px;color:var(--text3);padding:2px 6px;display:flex;gap:10px;flex-wrap:wrap}
 .msg-usage span{display:flex;align-items:center;gap:3px}
+.thinking-block{border-left:2px solid var(--text3);margin:2px 14px 4px;border-radius:4px;font-size:11px;color:var(--text3)}
+.thinking-header{padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--bg3);border-radius:4px;user-select:none}
+.thinking-header:hover{background:var(--bg2)}
+.thinking-body{padding:5px 8px;white-space:pre-wrap;font-family:monospace;line-height:1.4;max-height:180px;overflow-y:auto;display:none}
+.thinking-block.open .thinking-body{display:block}
 .tool-block{border:1px solid var(--border);border-radius:8px;margin:4px 0;overflow:hidden;font-size:12px}
 .tool-header{padding:6px 10px;background:var(--bg3);display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;font-family:'Consolas','SF Mono',monospace}
 .tool-header:hover{background:var(--bg4)}
@@ -304,23 +309,28 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
   <nav id="main-nav">
     <div class="nav-item active" data-page="dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></div>
     <div class="nav-item" data-page="chat"><span class="nav-icon">💬</span><span>Chat</span></div>
-    <div class="nav-item" data-page="sessions"><span class="nav-icon">🗂</span><span>Sessions</span><span class="nav-badge" id="nb-sessions">0</span></div>
-    <div class="nav-item" data-page="local-models"><span class="nav-icon">🖥</span><span>Local Models</span></div>
     <div class="nav-item" data-page="agents"><span class="nav-icon">🤖</span><span>Agents</span><span class="nav-badge" id="nb-agents">0</span></div>
+    <div class="nav-item" data-page="swarm"><span class="nav-icon">🐝</span><span>Swarm</span></div>
+    <div class="nav-item" data-page="mcp"><span class="nav-icon">🔌</span><span>MCP</span><span class="nav-badge" id="nb-mcp">0</span></div>
+    <div class="nav-item" data-page="knowledge"><span class="nav-icon">🧠</span><span>Knowledge</span></div>
+    <div class="nav-item" data-page="sessions"><span class="nav-icon">🗂</span><span>Sessions</span><span class="nav-badge" id="nb-sessions">0</span></div>
     <div class="nav-item" data-page="channels"><span class="nav-icon">📡</span><span>Channels</span><span class="nav-badge" id="nb-channels">0</span></div>
-    <div class="nav-item" data-page="skills"><span class="nav-icon">⚙</span><span>Skills</span><span class="nav-badge" id="nb-skills">0</span></div>
-    <div class="nav-item" data-page="cron"><span class="nav-icon">⏰</span><span>Cron</span><span class="nav-badge" id="nb-cron">0</span></div>
     <div class="nav-item" data-page="kanban"><span class="nav-icon">📋</span><span>Kanban</span><span class="nav-badge" id="nb-kanban">0</span></div>
     <div class="nav-item" data-page="goals"><span class="nav-icon">🎯</span><span>Goals</span><span class="nav-badge" id="nb-goals">0</span></div>
+    <div class="nav-item" data-page="skills"><span class="nav-icon">⚙</span><span>Skills</span><span class="nav-badge" id="nb-skills">0</span></div>
+    <div class="nav-item" data-page="providers"><span class="nav-icon">🔑</span><span>Providers</span></div>
+    <div class="nav-item" data-page="local-models"><span class="nav-icon">🖥</span><span>Local Models</span></div>
+    <div class="nav-item" data-page="mixture"><span class="nav-icon">🧬</span><span>Mixture</span></div>
+    <div class="nav-item" data-page="benchmark"><span class="nav-icon">⚖</span><span>Benchmark</span></div>
+    <div class="nav-item" data-page="marketplace"><span class="nav-icon">🏪</span><span>Marketplace</span></div>
+    <div class="nav-item" data-page="batch"><span class="nav-icon">📦</span><span>Batch</span></div>
+    <div class="nav-item" data-page="cron"><span class="nav-icon">⏰</span><span>Cron</span><span class="nav-badge" id="nb-cron">0</span></div>
     <div class="nav-item" data-page="dreams"><span class="nav-icon">🌙</span><span>Dreams</span></div>
     <div class="nav-item" data-page="profiles"><span class="nav-icon">👤</span><span>Profiles</span></div>
-    <div class="nav-item" data-page="mixture"><span class="nav-icon">🧬</span><span>Mixture</span></div>
-    <div class="nav-item" data-page="swarm"><span class="nav-icon">🐝</span><span>Swarm</span></div>
-    <div class="nav-item" data-page="knowledge"><span class="nav-icon">🧠</span><span>Knowledge</span></div>
-    <div class="nav-item" data-page="providers"><span class="nav-icon">🔑</span><span>Providers</span></div>
     <div class="nav-item" data-page="usage"><span class="nav-icon">📊</span><span>Usage</span></div>
-    <div class="nav-item" data-page="mcp"><span class="nav-icon">🔌</span><span>MCP</span><span class="nav-badge" id="nb-mcp">0</span></div>
     <div class="nav-item" data-page="settings"><span class="nav-icon">🛠</span><span>Settings</span></div>
+    <div class="nav-item" data-page="debug"><span class="nav-icon">🔬</span><span>Debug</span></div>
+    <div class="nav-item" data-page="optimizer"><span class="nav-icon">💰</span><span>Cost Optimizer</span></div>
     <div class="nav-item" data-page="about"><span class="nav-icon">📜</span><span>About</span></div>
   </nav>
   <div class="sidebar-footer">
@@ -339,7 +349,7 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
   <div class="header">
     <div class="header-left">
       <h2 id="page-title">Dashboard</h2>
-      <span class="badge" id="page-badge">v1.0.0</span>
+      <span class="badge" id="page-badge">v2.0.0</span>
     </div>
     <div class="header-actions" id="header-actions"></div>
   </div>
@@ -394,10 +404,8 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
           <select id="chat-model" onchange="onModelChange()" style="min-width:160px;max-width:220px"></select>
           <div class="toolbar-sep"></div>
           <label>Provider</label>
-          <select id="chat-provider" style="min-width:100px;max-width:140px">
-            <option value="ollama">Ollama</option>
-            <option value="">auto</option>
-            <option value="custom">Custom</option>
+          <select id="chat-provider" onchange="onProviderChange()" style="min-width:130px;max-width:160px">
+            <option value="">🔀 All providers</option>
           </select>
           <div class="toolbar-sep"></div>
           <label>Max iterations</label>
@@ -424,11 +432,15 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
             <textarea class="chat-input" id="chat-input" placeholder="Message ICECODE… (Enter to send, Shift+Enter for newline)" rows="2" onkeydown="handleChatKey(event)"></textarea>
             <button class="btn btn-ghost" id="voice-btn" onclick="toggleVoice()" title="Voice input (hold to speak)" style="font-size:18px;padding:6px 10px">🎤</button>
             <button class="btn btn-danger" id="stop-btn" onclick="stopStream()" style="display:none" title="Stop generation">■</button>
+            <button class="btn" id="autopilot-btn" onclick="toggleAutopilot()" title="Autopilot: agent works autonomously without asking for confirmation" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 10px;gap:4px">🤖 Auto</button>
+            <button class="btn" id="autoskills-btn" onclick="toggleAutoSkills()" title="Auto-Skills: agent automatically detects which skills are relevant for each message" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 10px">🔮 Skills</button>
             <button class="btn" id="send-btn" onclick="sendMessage()">Send</button>
           </div>
           <div class="chat-input-actions">
             <span style="font-size:11px;color:var(--text3)" id="session-indicator">No active session</span>
             <span style="font-size:11px;color:var(--accent)" id="voice-status" style="display:none"></span>
+            <span id="autopilot-status" style="display:none;font-size:11px;color:var(--green);font-weight:600">🤖 Autopilot ON — agent runs autonomously</span>
+            <span id="chat-skills-indicator" style="display:none;font-size:11px;color:var(--accent);cursor:pointer" onclick="showPage('skills')" title="Click to manage skills"></span>
             <button class="btn btn-ghost btn-xs" onclick="clearChat()" style="margin-left:auto">Clear chat</button>
           </div>
         </div>
@@ -491,11 +503,47 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
 
   <!-- SKILLS -->
   <div class="page content" id="page-skills">
-    <div class="row" style="margin-bottom:16px">
-      <button class="btn btn-sm" onclick="discoverSkills()">🔍 Discover Skills</button>
-      <button class="btn btn-outline btn-sm" onclick="loadSkills()">Refresh</button>
+    <!-- Header -->
+    <div class="row" style="margin-bottom:14px;gap:10px;flex-wrap:wrap;align-items:center">
+      <h3 style="margin:0;flex:1;min-width:160px">⚙ Skills Library</h3>
+      <span id="skills-active-count" style="font-size:12px;color:var(--green);font-weight:600"></span>
+      <button class="btn btn-outline btn-sm" onclick="clearActiveSkills()" id="skills-clear-btn" style="display:none">✕ Clear active</button>
+      <button class="btn btn-outline btn-sm" onclick="loadSkillLibrary()">Refresh</button>
     </div>
-    <div id="skills-container"><div class="empty"><div class="empty-icon">⚙</div>Loading skills…</div></div>
+
+    <!-- Tabs: Library | Active | Built-in -->
+    <div class="row" style="gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-sm" id="skl-tab-library" onclick="sklTab('library')" style="background:var(--accent);color:#000">📚 Library (166)</button>
+      <button class="btn btn-outline btn-sm" id="skl-tab-active" onclick="sklTab('active')">✅ Activee</button>
+      <button class="btn btn-outline btn-sm" id="skl-tab-builtin" onclick="sklTab('builtin')">🔧 Built-in</button>
+    </div>
+
+    <!-- Library tab -->
+    <div id="skl-panel-library">
+      <!-- Search + filter -->
+      <div class="row" style="gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <input id="skl-search" class="form-input" style="flex:1;min-width:180px" placeholder="Search skills…" oninput="filterSkillLibrary()">
+        <select id="skl-cat" class="form-input" style="width:auto" onchange="filterSkillLibrary()">
+          <option value="">All categories</option>
+        </select>
+        <select id="skl-tier" class="form-input" style="width:auto" onchange="filterSkillLibrary()">
+          <option value="">All tiers</option>
+          <option value="builtin">Built-in</option>
+          <option value="optional">Optional</option>
+        </select>
+      </div>
+      <div id="skl-library-container"><div class="empty"><div class="empty-icon">📚</div>Loading library…</div></div>
+    </div>
+
+    <!-- Active tab -->
+    <div id="skl-panel-active" style="display:none">
+      <div id="skl-active-container"><div class="empty"><div class="empty-icon">✅</div>No skills activated. Go to Library and click Activate on any skill.</div></div>
+    </div>
+
+    <!-- Built-in tab -->
+    <div id="skl-panel-builtin" style="display:none">
+      <div id="skills-container"><div class="empty"><div class="empty-icon">⚙</div>Loading…</div></div>
+    </div>
   </div>
 
   <!-- CRON -->
@@ -624,6 +672,229 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
     </div>
   </div>
 
+  <!-- BENCHMARK -->
+  <div class="page content" id="page-benchmark">
+    <div class="row" style="margin-bottom:16px;flex-wrap:wrap;gap:8px;align-items:center">
+      <h2 style="margin:0;font-size:16px;font-weight:700">⚖ Model Benchmark</h2>
+      <span style="font-size:12px;color:var(--text2)">Send the same prompt to multiple models simultaneously — compare responses, time and tokens</span>
+    </div>
+    <div style="max-width:900px">
+      <div class="form-group">
+        <label>Prompt</label>
+        <textarea id="bm-prompt" rows="3" style="width:100%;resize:vertical" placeholder="Ex: Explain the difference between TCP and UDP in 3 sentences."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Modele de comparat</label>
+        <div id="bm-models-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+        <button class="btn btn-outline btn-sm" onclick="bmAddModel()">+ Add model</button>
+        <button class="btn btn-outline btn-sm" onclick="bmLoadPresets()">⚡ Presets rapide</button>
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" id="bm-run-btn" onclick="runBenchmark()">▶ Run Benchmark</button>
+        <button class="btn btn-outline btn-sm" onclick="bmClear()">✕ Clear</button>
+      </div>
+    </div>
+    <div id="bm-results" style="margin-top:20px;display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(340px,1fr))"></div>
+  </div>
+
+  <!-- MARKETPLACE -->
+  <div class="page content" id="page-marketplace">
+    <div class="row" style="margin-bottom:16px;flex-wrap:wrap;gap:8px;align-items:center">
+      <h2 style="margin:0;font-size:16px;font-weight:700">🏪 Marketplace</h2>
+      <input type="text" id="mp-search" placeholder="Search skills…" style="flex:1;max-width:260px" oninput="loadMarketplace()">
+      <button class="btn btn-sm" onclick="showPublishSkill()">+ Publish skill</button>
+      <button class="btn btn-outline btn-sm" onclick="showImportCode()">⬆ Import cod</button>
+    </div>
+    <div id="mp-grid" style="display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+      <div class="empty"><span class="spinner"></span> Loading…</div>
+    </div>
+    <!-- Import by code modal -->
+    <div id="mp-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:none;align-items:center;justify-content:center">
+      <div style="background:var(--bg2);border-radius:12px;padding:24px;width:420px;max-width:95vw">
+        <h3 style="margin:0 0 14px">Import Skill</h3>
+        <textarea id="mp-import-code" rows="4" style="width:100%;resize:vertical;font-family:monospace;font-size:11px" placeholder="Paste the base64 skill code here…"></textarea>
+        <div class="row" style="gap:8px;margin-top:12px">
+          <button class="btn btn-sm" onclick="doImportSkill()">Import</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('mp-import-modal').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATCH PROCESSING -->
+  <div class="page content" id="page-batch">
+    <div class="row" style="margin-bottom:16px;flex-wrap:wrap;gap:8px;align-items:center">
+      <h2 style="margin:0;font-size:16px;font-weight:700">📦 Batch Processing</h2>
+      <span style="font-size:12px;color:var(--text2)">Run a prompt across multiple files in parallel</span>
+    </div>
+    <div style="max-width:800px">
+      <div class="form-group">
+        <label>Template prompt</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px" id="batch-templates"></div>
+        <textarea id="batch-prompt" rows="4" style="width:100%;resize:vertical" placeholder="Use {file} for file path, {filename} for name, {content} for content.&#10;Ex: Analyze {filename} and find bugs:&#10;&#10;{content}"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Files (one per line)</label>
+        <textarea id="batch-files" rows="5" style="width:100%;resize:vertical;font-family:monospace;font-size:12px" placeholder="/home/user/project/main.py&#10;/home/user/project/utils.py&#10;/home/user/project/models.py"></textarea>
+      </div>
+      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="form-group" style="margin:0;display:flex;align-items:center;gap:8px">
+          <label style="margin:0;white-space:nowrap">Model:</label>
+          <input type="text" id="batch-model" style="width:180px" placeholder="qwen2.5:7b">
+        </div>
+        <div class="form-group" style="margin:0;display:flex;align-items:center;gap:8px">
+          <label style="margin:0;white-space:nowrap">Concurrency:</label>
+          <select id="batch-concurrency">
+            <option value="1">1 (sequential)</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="gap:8px;margin-top:8px">
+        <button class="btn btn-sm" id="batch-run-btn" onclick="runBatch()">▶ Run Batch</button>
+        <button class="btn btn-outline btn-sm" onclick="batchClear()">✕ Clear</button>
+      </div>
+    </div>
+    <div id="batch-progress" style="margin-top:16px;display:none">
+      <div class="row" style="gap:8px;margin-bottom:8px;align-items:center">
+        <span id="batch-progress-label" style="font-size:12px;color:var(--text2)">0 / 0</span>
+        <div style="flex:1;height:6px;background:var(--bg3);border-radius:3px">
+          <div id="batch-progress-bar" style="height:6px;background:var(--accent);border-radius:3px;transition:width .3s;width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div id="batch-results" style="margin-top:8px;display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- DEBUG -->
+  <div class="page content" id="page-debug">
+    <div class="row" style="margin-bottom:16px;gap:10px;align-items:center;flex-wrap:wrap">
+      <h2 style="margin:0;font-size:16px;font-weight:700">🔬 Auto-Debug</h2>
+      <span style="font-size:12px;color:var(--text2);flex:1">Checks the real project state in real time</span>
+      <button class="btn btn-sm" id="debug-run-btn" onclick="runDebug()">▶ Run Debug</button>
+      <button class="btn btn-outline btn-sm" onclick="debugClear()">✕ Clear</button>
+    </div>
+
+    <!-- Sumar -->
+    <div id="debug-summary" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:10px;border:1px solid var(--border)">
+      <div class="row" style="gap:16px;flex-wrap:wrap;align-items:center">
+        <div style="text-align:center">
+          <div id="dbg-ok-count" style="font-size:28px;font-weight:800;color:var(--green)">0</div>
+          <div style="font-size:11px;color:var(--text2)">OK</div>
+        </div>
+        <div style="text-align:center">
+          <div id="dbg-warn-count" style="font-size:28px;font-weight:800;color:var(--yellow,#f0a500)">0</div>
+          <div style="font-size:11px;color:var(--text2)">Avertismente</div>
+        </div>
+        <div style="text-align:center">
+          <div id="dbg-fail-count" style="font-size:28px;font-weight:800;color:var(--red)">0</div>
+          <div style="font-size:11px;color:var(--text2)">Erori</div>
+        </div>
+        <div id="dbg-status-msg" style="flex:1;font-size:14px;font-weight:600;text-align:right"></div>
+      </div>
+    </div>
+
+    <!-- Check sections -->
+    <div id="debug-sections" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- COST OPTIMIZER -->
+  <div class="page content" id="page-optimizer">
+    <div class="row" style="margin-bottom:16px;gap:10px;align-items:center;flex-wrap:wrap">
+      <h2 style="margin:0;font-size:16px;font-weight:700">💰 Cost Optimizer</h2>
+      <span style="font-size:12px;color:var(--text2);flex:1">Semantic Cache · Context Compressor · Smart Model Router</span>
+      <button class="btn btn-sm" onclick="loadOptimizer()">↺ Refresh</button>
+    </div>
+
+    <!-- 3 stat cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px">
+      <div class="card" style="padding:16px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Cache Hits</div>
+        <div id="opt-cache-hits" style="font-size:32px;font-weight:800;color:var(--green)">—</div>
+        <div id="opt-cache-rate" style="font-size:11px;color:var(--text2)">hit rate</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Tokens Saved</div>
+        <div id="opt-tokens-saved" style="font-size:32px;font-weight:800;color:var(--accent)">—</div>
+        <div style="font-size:11px;color:var(--text2)">via cache + compression</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Cost Saved (USD)</div>
+        <div id="opt-cost-saved" style="font-size:32px;font-weight:800;color:var(--green)">—</div>
+        <div style="font-size:11px;color:var(--text2)">vs always using Opus</div>
+      </div>
+    </div>
+
+    <!-- Semantic Cache section -->
+    <div class="card" style="margin-bottom:12px;padding:16px">
+      <div class="row" style="margin-bottom:12px;align-items:center;gap:8px">
+        <span style="font-weight:700;font-size:14px">🧠 Semantic Cache</span>
+        <span id="opt-cache-status" class="chip" style="font-size:10px">—</span>
+        <span style="flex:1"></span>
+        <button class="btn btn-outline btn-sm" onclick="clearCache()" style="font-size:11px">🗑 Clear Cache</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
+        <div style="background:var(--bg3);border-radius:6px;padding:10px">
+          <div style="color:var(--text2);margin-bottom:4px">Entries stored</div>
+          <div id="opt-cache-entries" style="font-weight:700;font-size:16px">—</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:10px">
+          <div style="color:var(--text2);margin-bottom:4px">Threshold</div>
+          <div id="opt-cache-threshold" style="font-weight:700;font-size:16px">—</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:10px">
+          <div style="color:var(--text2);margin-bottom:4px">TTL</div>
+          <div id="opt-cache-ttl" style="font-weight:700;font-size:16px">—</div>
+        </div>
+      </div>
+      <!-- Cache test -->
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <input id="opt-cache-test-input" class="input" placeholder="Test: enter a question to check if it is in the cache…" style="flex:1;font-size:12px">
+        <button class="btn btn-sm" onclick="testCache()" style="font-size:11px">Test</button>
+      </div>
+      <div id="opt-cache-test-result" style="margin-top:8px;font-size:12px;display:none"></div>
+    </div>
+
+    <!-- Smart Router section -->
+    <div class="card" style="margin-bottom:12px;padding:16px">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">🧭 Smart Model Router</div>
+      <!-- Route test -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input id="opt-route-input" class="input" placeholder="Enter a prompt to see which model would be selected…" style="flex:1;font-size:12px">
+        <button class="btn btn-sm" onclick="testRoute()" style="font-size:11px">Analyze</button>
+      </div>
+      <div id="opt-route-result" style="display:none;background:var(--bg3);border-radius:8px;padding:12px;font-size:12px"></div>
+      <!-- Cost table preview -->
+      <div style="margin-top:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Tabel costuri (per 1K tokeni)</div>
+        <div id="opt-cost-table" style="display:flex;flex-direction:column;gap:3px;max-height:220px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- Context Compressor section -->
+    <div class="card" style="padding:16px">
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px">✂️ Context Compressor</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">
+        Long conversations consume many tokens. The compressor keeps the last 6 messages verbatim and summarizes the rest automatically.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+        <div style="background:var(--bg3);border-radius:6px;padding:10px">
+          <div style="color:var(--text2);margin-bottom:4px">Max tokens before compression</div>
+          <div style="font-weight:700;font-size:15px" id="opt-comp-max">3,000</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:10px">
+          <div style="color:var(--text2);margin-bottom:4px">Recent messages kept</div>
+          <div style="font-weight:700;font-size:15px" id="opt-comp-keep">6</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text2)">
+        💡 Configurabil via <code>.env</code>: <code>CONTEXT_MAX_TOKENS</code>, <code>CONTEXT_KEEP_RECENT</code>, <code>CONTEXT_COMPRESSION_ENABLED</code>
+      </div>
+    </div>
+  </div>
+
   <!-- ABOUT / LICENSE -->
   <div class="page content" id="page-about">
     <div style="max-width:700px;margin:0 auto">
@@ -632,9 +903,9 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
         <h2 style="font-size:24px;font-weight:800;margin-bottom:4px">ICECODE</h2>
         <div style="color:var(--text2);font-size:13px">Super-Agent Network v2.0.0</div>
         <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-          <span class="chip chip-blue">159 API Routes</span>
-          <span class="chip chip-green">16 Agent Tools</span>
-          <span class="chip chip-yellow">19 UI Pages</span>
+          <span class="chip chip-blue">183 API Routes</span>
+          <span class="chip chip-green">90+ Agent Tools</span>
+          <span class="chip chip-yellow">27 UI Pages</span>
           <span class="chip chip-blue">14 LLM Providers</span>
           <span class="chip chip-green">34 Platform Gateways</span>
         </div>
@@ -1086,7 +1357,10 @@ const PAGE_TITLES = {
   dashboard:'Dashboard', chat:'Chat', sessions:'Sessions', 'local-models':'Local Models',
   agents:'Agents', channels:'Channels', skills:'Skills', cron:'Cron Jobs',
   kanban:'Kanban', goals:'Goals', dreams:'Dreams', profiles:'Profiles', mixture:'Mixture of Agents',
-  providers:'Providers', settings:'Settings'
+  swarm:'Swarm', knowledge:'Knowledge', providers:'Providers', usage:'Usage',
+  mcp:'MCP Servers', settings:'Settings', about:'About',
+  benchmark:'Model Benchmark', marketplace:'Marketplace', batch:'Batch Processing',
+  debug:'Auto-Debug', optimizer:'Cost Optimizer'
 };
 
 function showPage(name){
@@ -1107,7 +1381,7 @@ function showPage(name){
     'local-models': ()=>{},
     agents: loadAgents,
     channels: loadChannels,
-    skills: loadSkills,
+    skills: loadSkillLibrary,
     cron: loadCron,
     kanban: loadKanban,
     goals: loadGoals,
@@ -1121,6 +1395,11 @@ function showPage(name){
     mcp: loadMcp,
     about: () => {},
     settings: loadSettingsPage,
+    benchmark: ()=>{ if(!bmModels.length) bmLoadPresets(); },
+    marketplace: loadMarketplace,
+    batch: loadBatchTemplates,
+    debug: ()=>{},
+    optimizer: loadOptimizer,
   };
   if(loaders[name]) loaders[name]();
 }
@@ -1139,7 +1418,7 @@ async function checkHealth(){
   if(h.status==='ok'){
     dot.className='status-dot dot-green';
     st.textContent='Online';
-    document.getElementById('page-badge').textContent = h.version||'v1.0.0';
+    document.getElementById('page-badge').textContent = h.version||'v2.0.0';
   } else {
     dot.className='status-dot dot-red';
     st.textContent=h.error ? 'Offline' : 'Error';
@@ -1227,74 +1506,157 @@ async function loadDashboard(){
 }
 
 /* ─────────── Models loading ─────────── */
-async function loadChatModels(){
-  const [modelsRes, lmodels] = await Promise.all([api('/api/models'), api('/api/local-models/scan')]);
-  const sel = document.getElementById('chat-model');
-  const prev = sel.value;
-  sel.innerHTML = '';
+let _allModelsData = { local: {}, cloud: {}, catalog: [] };
 
-  // Local models first — use | as delimiter to avoid collision with : in model names
+async function loadChatModels(){
+  const prevModel = document.getElementById('chat-model').value;
+
+  // Load local + catalog + configured providers in parallel
+  const [modelsRes, lmodels, catalog, configured] = await Promise.all([
+    api('/api/models').catch(()=>({})),
+    api('/api/local-models/scan').catch(()=>({})),
+    api('/api/providers/catalog').catch(()=>({})),
+    api('/api/providers/').catch(()=>[]),
+  ]);
+
+  // Build local models map
+  _allModelsData.local = {};
   if(lmodels.servers){
     allLocalModels = lmodels.servers;
     for(const [stype, sdata] of Object.entries(lmodels.servers)){
-      if(!(sdata.models||[]).length) continue;
-      const grp = document.createElement('optgroup');
-      grp.label = `Local — ${stype}`;
-      for(const m of sdata.models){
-        const o = document.createElement('option');
-        o.value = `local|${stype}|${m}|${sdata.url}`;
-        o.textContent = m;
-        grp.appendChild(o);
-      }
-      sel.appendChild(grp);
+      if((sdata.models||[]).length) _allModelsData.local[stype] = { models: sdata.models, url: sdata.url };
+    }
+  }
+  // Ollama fallback from /api/models if scan missed it
+  if(modelsRes.models?.ollama?.length && !_allModelsData.local.ollama){
+    _allModelsData.local.ollama = { models: modelsRes.models.ollama, url: 'http://localhost:11434' };
+  }
+
+  // Build configured cloud providers map
+  _allModelsData.cloud = {};
+  if(Array.isArray(configured)){
+    for(const p of configured){
+      if(p.enabled && p.models?.length) _allModelsData.cloud[p.id] = { models: p.models, provider: p };
     }
   }
 
-  // Ollama models from /api/models (fallback if local-models/scan empty)
-  if(modelsRes.models && modelsRes.models.ollama && Array.isArray(modelsRes.models.ollama)){
-    const hasOllama = Array.from(sel.options).some(o=>o.value.startsWith('local|ollama|'));
-    if(!hasOllama){
+  // Store full catalog (endpoint returns {providers:[...]} or array)
+  const catalogArr = Array.isArray(catalog) ? catalog : (catalog.providers || []);
+  _allModelsData.catalog = catalogArr;
+
+  // Build provider dropdown from catalog (shows ALL providers)
+  _buildProviderDropdown(configured || []);
+
+  // Build model dropdown for currently selected provider (default: all)
+  const pSel = document.getElementById('chat-provider');
+  _buildModelDropdown(pSel.value || '', prevModel);
+}
+
+function _buildProviderDropdown(configured){
+  const pSel = document.getElementById('chat-provider');
+  const prev = pSel.value;
+  const configuredIds = new Set((configured||[]).filter(p=>p.enabled&&p.models?.length).map(p=>p.id));
+
+  pSel.innerHTML = '';
+  // "All" option
+  pSel.appendChild(Object.assign(document.createElement('option'), {value:'', textContent:'🔀 All'}));
+
+  for(const p of _allModelsData.catalog){
+    const o = document.createElement('option');
+    o.value = p.id;
+    const ready = !p.requires_key || configuredIds.has(p.id);
+    o.textContent = `${p.icon||'☁️'} ${p.name}${ready ? '' : ' *'}`;
+    o.title = ready ? (p.description||'') : `${p.description||''} — Add API key in Settings`;
+    if(!ready) o.style.color = 'var(--text3)';
+    pSel.appendChild(o);
+  }
+
+  // Restore selection if still valid
+  if(prev && Array.from(pSel.options).some(o=>o.value===prev)) pSel.value = prev;
+}
+
+function _buildModelDropdown(providerId, restoreValue){
+  const sel = document.getElementById('chat-model');
+  sel.innerHTML = '';
+
+  const showAll = !providerId;
+
+  // Local models
+  for(const [stype, sdata] of Object.entries(_allModelsData.local||{})){
+    if(!showAll && providerId !== stype) continue;
+    const grp = document.createElement('optgroup');
+    grp.label = `🦙 Local — ${stype}`;
+    for(const m of sdata.models){
+      const o = document.createElement('option');
+      o.value = `local|${stype}|${m}|${sdata.url}`;
+      o.textContent = m;
+      grp.appendChild(o);
+    }
+    sel.appendChild(grp);
+  }
+
+  // Cloud models (only configured ones have actual model lists)
+  for(const [pid, pdata] of Object.entries(_allModelsData.cloud||{})){
+    if(!showAll && pid !== providerId) continue;
+    const grp = document.createElement('optgroup');
+    grp.label = `${pdata.provider.icon||'☁️'} ${pdata.provider.name}`;
+    for(const m of pdata.models){
+      const o = document.createElement('option');
+      o.value = `cloud|${pid}|${m}`;
+      o.textContent = m;
+      grp.appendChild(o);
+    }
+    sel.appendChild(grp);
+  }
+
+  // If provider selected but not yet configured, show static models from catalog (greyed)
+  if(!showAll && !_allModelsData.cloud[providerId] && providerId !== 'ollama'){
+    const cat = _allModelsData.catalog.find(p=>p.id===providerId);
+    if(cat?.static_models?.length){
       const grp = document.createElement('optgroup');
-      grp.label = 'Ollama';
-      for(const m of modelsRes.models.ollama){
+      grp.label = `${cat.icon||'☁️'} ${cat.name} (not configured)`;
+      for(const m of cat.static_models){
         const o = document.createElement('option');
-        o.value = `local|ollama|${m}|http://localhost:11434`;
+        o.value = `cloud|${providerId}|${m}`;
         o.textContent = m;
+        o.style.color = 'var(--text3)';
         grp.appendChild(o);
       }
       sel.appendChild(grp);
+    } else if(!sel.options.length){
+      sel.innerHTML = `<option value="">⚙️ Add API key for ${providerId} in Settings</option>`;
     }
   }
 
   if(!sel.options.length){
-    sel.innerHTML='<option value="">No models found — start Ollama first</option>';
+    sel.innerHTML = '<option value="">No models — start Ollama or configure a provider in Settings</option>';
+    onModelChange(); return;
   }
 
-  // Restore prev selection if still valid
+  // Try to restore previous selection
   let restored = false;
-  if(prev){
-    for(const o of sel.options) if(o.value===prev){sel.value=prev;restored=true;break;}
+  if(restoreValue){
+    for(const o of sel.options) if(o.value===restoreValue){sel.value=restoreValue;restored=true;break;}
   }
-
-  // Auto-select best available model via agents/auto-models
   if(!restored){
-    try{
-      const autoRes = await api('/api/agents/auto-models');
-      const best = autoRes.auto_selected?.coding || autoRes.auto_selected?.general;
+    // Auto-select best via /api/agents/auto-models (fire and forget)
+    api('/api/agents/auto-models').then(r=>{
+      const best = r.auto_selected?.coding || r.auto_selected?.general;
       if(best){
         for(const o of sel.options){
-          if(o.textContent===best||o.value.includes('|'+best+'|')){sel.value=o.value;restored=true;break;}
+          if(o.textContent===best||o.value.includes('|'+best+'|')){sel.value=o.value;onModelChange();return;}
         }
       }
-    }catch(e){}
-  }
-
-  // Fallback: pick first local model
-  if(!restored && sel.options.length){
+    }).catch(()=>{});
     sel.value = sel.options[0].value;
   }
 
   onModelChange();
+}
+
+function onProviderChange(){
+  const pSel = document.getElementById('chat-provider');
+  _buildModelDropdown(pSel.value || '', document.getElementById('chat-model').value);
 }
 
 function onModelChange(){
@@ -1303,9 +1665,9 @@ function onModelChange(){
   const info = document.getElementById('model-ctx-info');
   if(val.startsWith('local|')){
     const parts = val.split('|');
-    currentProvider = parts[1];  // e.g. "ollama"
-    currentModel = parts[2];     // full model name e.g. "qwen3.5:4b"
-    currentBaseUrl = parts[3]||''; // e.g. "http://localhost:11434"
+    currentProvider = parts[1];
+    currentModel = parts[2];
+    currentBaseUrl = parts[3]||'';
     info.textContent = `Local • ${parts[1]} • ${parts[2]}`;
   } else if(val.startsWith('cloud|')){
     const parts = val.split('|');
@@ -1319,7 +1681,10 @@ function onModelChange(){
     currentBaseUrl = '';
     info.textContent = val ? `Ollama • ${val}` : '';
   }
-  document.getElementById('chat-provider').value = currentProvider || '';
+  // Sync provider dropdown to match selected model's provider
+  const pSel = document.getElementById('chat-provider');
+  if(Array.from(pSel.options).some(o=>o.value===currentProvider)) pSel.value = currentProvider;
+  else pSel.value = '';
 }
 
 /* ─────────── Chat ─────────── */
@@ -1399,6 +1764,47 @@ function handleChatKey(e){
   if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); }
 }
 
+let _autoSkillsOn = false;
+function toggleAutoSkills(){
+  _autoSkillsOn = !_autoSkillsOn;
+  const btn = document.getElementById('autoskills-btn');
+  if(_autoSkillsOn){
+    btn.style.background='var(--accent)';
+    btn.style.color='#000';
+    btn.style.borderColor='var(--accent)';
+    btn.textContent='🔮 Skills ON';
+    showToast('Auto-Skills enabled — agent auto-detects relevant skills','success');
+  } else {
+    btn.style.background='var(--bg3)';
+    btn.style.color='var(--text2)';
+    btn.style.borderColor='var(--border)';
+    btn.textContent='🔮 Skills';
+    showToast('Auto-Skills dezactivat','info');
+  }
+}
+
+let _autopilotOn = false;
+function toggleAutopilot(){
+  _autopilotOn = !_autopilotOn;
+  const btn = document.getElementById('autopilot-btn');
+  const status = document.getElementById('autopilot-status');
+  if(_autopilotOn){
+    btn.style.background='var(--green)';
+    btn.style.color='#000';
+    btn.style.borderColor='var(--green)';
+    btn.textContent='🤖 Auto ON';
+    status.style.display='inline';
+    showToast('Autopilot enabled — agent runs autonomously without confirmation','success');
+  } else {
+    btn.style.background='var(--bg3)';
+    btn.style.color='var(--text2)';
+    btn.style.borderColor='var(--border)';
+    btn.textContent='🤖 Auto';
+    status.style.display='none';
+    showToast('Autopilot dezactivat','info');
+  }
+}
+
 async function sendMessage(){
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
@@ -1417,14 +1823,17 @@ async function sendMessage(){
   const model   = currentModel || undefined;
   const provider= currentProvider || 'ollama';
   const baseUrl = currentBaseUrl || undefined;
-  const maxIter = parseInt(document.getElementById('chat-iters').value)||10;
+  const maxIter = _autopilotOn ? 30 : (parseInt(document.getElementById('chat-iters').value)||10);
 
   const body = {
     message: text,
     session_id: currentSession||undefined,
     model, provider,
     base_url: baseUrl,
-    max_iterations: maxIter
+    max_iterations: maxIter,
+    autopilot: _autopilotOn,
+    active_skills: getActiveSkills(),
+    auto_skills: _autoSkillsOn,
   };
 
   // Try WebSocket first; fall back to SSE on failure
@@ -1456,7 +1865,7 @@ async function _sendViaWs(body, assistantEl){
       assistantEl.querySelector('.msg-bubble').innerHTML='<span class="spinner"></span>';
       chatWs.send(JSON.stringify(body));
 
-      let fullText='', toolBlocks={}, usageData=null;
+      let fullText='', toolBlocks={}, usageData=null, thinkingText='', thinkingEl=null;
 
       const origOnMessage = chatWs.onmessage;
       chatWs.onmessage = (evt)=>{
@@ -1467,6 +1876,21 @@ async function _sendViaWs(body, assistantEl){
           currentSession=ev.session_id;
           document.getElementById('session-indicator').textContent=`Session: ${ev.session_id.slice(0,16)}…`;
           loadChatSessions();
+        } else if(ev.type==='thinking_start'){
+          const tel=document.createElement('div');
+          tel.className='thinking-block open';
+          tel.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'open\')"><span class="spinner" style="width:10px;height:10px"></span> Thinking…</div><div class="thinking-body"></div>';
+          assistantEl.querySelector('.msg-role').after(tel);
+          thinkingEl=tel;
+        } else if(ev.type==='thinking'){
+          thinkingText+=ev.content||'';
+          if(thinkingEl) thinkingEl.querySelector('.thinking-body').textContent=thinkingText;
+          scrollMsgs();
+        } else if(ev.type==='thinking_end'){
+          if(thinkingEl){
+            thinkingEl.querySelector('.thinking-header').innerHTML='🤔 Chain of thought <small style="opacity:.6">(click to expand)</small>';
+            thinkingEl.classList.remove('open');
+          }
         } else if(ev.type==='text'){
           fullText+=ev.content||'';
           renderAssistantText(assistantEl, fullText, toolBlocks);
@@ -1529,7 +1953,7 @@ async function _sendViaSse(body, assistantEl){
 
     const reader = res.body.getReader();
     const dec = new TextDecoder();
-    let fullText='', toolBlocks={}, usageData=null, buf='';
+    let fullText='', toolBlocks={}, usageData=null, buf='', thinkingText='', thinkingEl=null;
 
     assistantEl.querySelector('.msg-bubble').innerHTML='<span class="spinner"></span>';
 
@@ -1550,6 +1974,21 @@ async function _sendViaSse(body, assistantEl){
           currentSession=ev.session_id;
           document.getElementById('session-indicator').textContent=`Session: ${ev.session_id.slice(0,16)}…`;
           loadChatSessions();
+        } else if(ev.type==='thinking_start'){
+          const tel=document.createElement('div');
+          tel.className='thinking-block open';
+          tel.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'open\')"><span class="spinner" style="width:10px;height:10px"></span> Thinking…</div><div class="thinking-body"></div>';
+          assistantEl.querySelector('.msg-role').after(tel);
+          thinkingEl=tel;
+        } else if(ev.type==='thinking'){
+          thinkingText+=ev.content||'';
+          if(thinkingEl) thinkingEl.querySelector('.thinking-body').textContent=thinkingText;
+          scrollMsgs();
+        } else if(ev.type==='thinking_end'){
+          if(thinkingEl){
+            thinkingEl.querySelector('.thinking-header').innerHTML='🤔 Chain of thought <small style="opacity:.6">(click to expand)</small>';
+            thinkingEl.classList.remove('open');
+          }
         } else if(ev.type==='text'){
           fullText+=ev.content||'';
           renderAssistantText(assistantEl, fullText, toolBlocks);
@@ -1562,6 +2001,15 @@ async function _sendViaSse(body, assistantEl){
             if(v.name===ev.name&&v.result===null){ v.result=ev.result; break; }
           }
           renderAssistantText(assistantEl, fullText, toolBlocks);
+        } else if(ev.type==='skills_detected'){
+          // Show auto-detected skills as a subtle note above the response
+          const bub=assistantEl.querySelector('.msg-bubble');
+          if(bub && ev.skills?.length){
+            const note=document.createElement('div');
+            note.style.cssText='font-size:11px;color:var(--accent);margin-bottom:6px;opacity:.8';
+            note.innerHTML=`🔮 Auto-skills: ${ev.skills.map(s=>`<span class="chip" style="font-size:10px">${escH(s)}</span>`).join(' ')}`;
+            bub.insertBefore(note, bub.firstChild);
+          }
         } else if(ev.type==='usage'){
           usageData=ev.usage;
         } else if(ev.type==='error'){
@@ -1616,7 +2064,7 @@ function _ensureChatWs(){
   const sid = currentSession || ('ses-'+Math.random().toString(36).slice(2,10));
   if(!currentSession) currentSession = sid;
   const proto = location.protocol==='https:'?'wss:':'ws:';
-  const wsUrl = `${proto}//${location.host}/ws/${sid}`;
+  const wsUrl = `${proto}//${location.host}/api/chat/ws/${sid}`;
   chatWs = new WebSocket(wsUrl);
   wsReady = false;
   chatWs.onopen  = () => { wsReady=true; };
@@ -1750,6 +2198,8 @@ async function loadSessions(){
         <span class="chip chip-blue text-xs">${escH(s.model||'unknown model')}</span>
         <div style="display:flex;gap:6px">
           <button class="btn btn-outline btn-xs" onclick="openSession('${escH(sid)}')">Open</button>
+          <button class="btn btn-outline btn-xs" onclick="exportSession('${escH(sid)}','json')" title="Export JSON">⬇ JSON</button>
+          <button class="btn btn-outline btn-xs" onclick="exportSession('${escH(sid)}','markdown')" title="Export Markdown">⬇ MD</button>
           <button class="btn btn-danger btn-xs" onclick="deleteSession('${escH(sid)}')">Delete</button>
         </div>
       </div>
@@ -1769,6 +2219,17 @@ async function deleteSession(sid){
   if(r.error){ toast('Failed to delete: '+r.error,'error'); return; }
   toast('Session deleted','success');
   loadSessions();
+}
+
+function exportSession(sid, format){
+  const url = `${API}/api/sessions/${encodeURIComponent(sid)}/export?format=${format}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast(`Exporting as ${format.toUpperCase()}…`, 'success');
 }
 
 /* ─────────── Local Models ─────────── */
@@ -2168,42 +2629,234 @@ async function deleteChannel(id){
 }
 
 /* ─────────── Skills ─────────── */
-async function loadSkills(){
+
+// Active skills stored in localStorage: Set of skill slugs
+let _activeSkills = new Set(JSON.parse(localStorage.getItem('icecode_active_skills')||'[]'));
+let _libraryCache = [];
+let _currentSklTab = 'library';
+
+function _saveActiveSkills(){
+  localStorage.setItem('icecode_active_skills', JSON.stringify([..._activeSkills]));
+  _updateSkillsBadge();
+}
+
+function _updateSkillsBadge(){
+  const nb = document.getElementById('nb-skills');
+  if(nb) nb.textContent = _activeSkills.size || '';
+  const cnt = document.getElementById('skills-active-count');
+  if(cnt) cnt.textContent = _activeSkills.size ? `${_activeSkills.size} active` : '';
+  const clr = document.getElementById('skills-clear-btn');
+  if(clr) clr.style.display = _activeSkills.size ? 'inline-flex' : 'none';
+  // update chat input indicator
+  const ci = document.getElementById('chat-skills-indicator');
+  if(ci){
+    if(_activeSkills.size){
+      ci.style.display='inline';
+      ci.textContent=`🧠 ${_activeSkills.size} skill${_activeSkills.size!==1?'s':''} active`;
+    } else { ci.style.display='none'; }
+  }
+}
+
+function getActiveSkills(){ return [..._activeSkills]; }
+
+function sklTab(tab){
+  _currentSklTab = tab;
+  ['library','active','builtin'].forEach(t=>{
+    const panel=document.getElementById(`skl-panel-${t}`);
+    const btn=document.getElementById(`skl-tab-${t}`);
+    if(panel) panel.style.display = t===tab ? 'block' : 'none';
+    if(btn){
+      btn.style.background = t===tab ? 'var(--accent)' : '';
+      btn.style.color = t===tab ? '#000' : '';
+      btn.className = t===tab ? 'btn btn-sm' : 'btn btn-outline btn-sm';
+    }
+  });
+  if(tab==='active') renderActiveSkills();
+  if(tab==='builtin') loadBuiltinSkills();
+}
+
+function clearActiveSkills(){
+  _activeSkills.clear();
+  _saveActiveSkills();
+  showToast('All skills deactivated','info');
+  if(_currentSklTab==='active') renderActiveSkills();
+  if(_currentSklTab==='library') _renderLibrary(_libraryCache);
+}
+
+function toggleActiveSkill(slug){
+  if(_activeSkills.has(slug)){
+    _activeSkills.delete(slug);
+    showToast(`Skill dezactivat: ${slug}`,'info');
+  } else {
+    _activeSkills.add(slug);
+    showToast(`Skill activat: ${slug}`,'success');
+  }
+  _saveActiveSkills();
+  // re-render buttons in current view
+  document.querySelectorAll(`[data-skill-slug="${slug}"]`).forEach(btn=>{
+    const on = _activeSkills.has(slug);
+    btn.textContent = on ? '✅ Activee' : '+ Activate';
+    btn.style.background = on ? 'var(--green)' : '';
+    btn.style.color = on ? '#000' : '';
+  });
+  if(_currentSklTab==='active') renderActiveSkills();
+}
+
+const CAT_ICONS = {
+  'software-development':'💻','research':'🔬','creative':'🎨','devops':'⚙',
+  'data-science':'📊','mlops':'🤖','finance':'💰','productivity':'📋',
+  'github':'🐙','media':'🎬','health':'❤','security':'🔐','autonomous-ai-agents':'🤖',
+  'web-development':'🌐','email':'📧','social-media':'📱','gaming':'🎮',
+  'blockchain':'⛓','mcp':'🔌','note-taking':'📝','smart-home':'🏠',
+  'inference':'⚡','training':'🧠','apple':'🍎','models':'🤖','evaluation':'📈',
+};
+
+function _renderLibrary(skills){
+  const c = document.getElementById('skl-library-container');
+  if(!c) return;
+  if(!skills.length){
+    c.innerHTML='<div class="empty">No skills found with these filters.</div>'; return;
+  }
+  // Group by category
+  const bycat = {};
+  skills.forEach(s=>{
+    const cat = s.category||'other';
+    (bycat[cat]||(bycat[cat]=[])).push(s);
+  });
+  c.innerHTML = Object.entries(bycat).sort(([a],[b])=>a.localeCompare(b)).map(([cat, items])=>`
+    <div style="margin-bottom:18px">
+      <div style="font-weight:700;font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+        ${CAT_ICONS[cat]||'📦'} ${cat.replace(/-/g,' ')} <span style="font-weight:400">(${items.length})</span>
+      </div>
+      <div class="skills-grid">
+        ${items.map(s=>{
+          const on=_activeSkills.has(s.slug);
+          return `<div class="skill-card">
+            <div class="skill-icon" style="background:var(--bg3)">${CAT_ICONS[s.category]||'📦'}</div>
+            <div class="skill-info">
+              <div class="skill-name">${escH(s.name)}</div>
+              <div class="skill-desc" title="${escH(s.description)}">${escH(s.description||'—')}</div>
+              <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
+                <span class="chip" style="font-size:10px">${escH(s.tier)}</span>
+                ${s.tags.slice(0,2).map(t=>`<span class="chip" style="font-size:10px">${escH(t)}</span>`).join('')}
+                <button data-skill-slug="${escH(s.slug)}"
+                  onclick="toggleActiveSkill('${escH(s.slug)}')"
+                  style="margin-left:auto;padding:3px 8px;font-size:11px;background:${on?'var(--green)':''}; color:${on?'#000':''}"
+                  class="btn btn-outline btn-xs">
+                  ${on?'✅ Activee':'+ Activate'}
+                </button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterSkillLibrary(){
+  const q=(document.getElementById('skl-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('skl-cat')?.value||'';
+  const tier=document.getElementById('skl-tier')?.value||'';
+  let filtered=_libraryCache;
+  if(tier) filtered=filtered.filter(s=>s.tier===tier);
+  if(cat)  filtered=filtered.filter(s=>s.category===cat);
+  if(q)    filtered=filtered.filter(s=>
+    s.name.toLowerCase().includes(q)||
+    (s.description||'').toLowerCase().includes(q)||
+    s.tags.some(t=>t.toLowerCase().includes(q))||
+    s.category.toLowerCase().includes(q)||
+    s.slug.toLowerCase().includes(q)
+  );
+  _renderLibrary(filtered);
+}
+
+function renderActiveSkills(){
+  const c=document.getElementById('skl-active-container');
+  if(!c) return;
+  if(!_activeSkills.size){
+    c.innerHTML='<div class="empty"><div class="empty-icon">✅</div>No skills activated. Go to Library and click Activate on the desired skills.</div>';
+    return;
+  }
+  const activeList=_libraryCache.filter(s=>_activeSkills.has(s.slug));
+  // also add slugs not found in library (custom)
+  const found=new Set(activeList.map(s=>s.slug));
+  const extra=[..._activeSkills].filter(s=>!found.has(s)).map(s=>({slug:s,name:s,description:'',category:'custom',tier:'custom',tags:[]}));
+  const all=[...activeList,...extra];
+  c.innerHTML=`<div style="margin-bottom:10px;font-size:13px;color:var(--text2)">${all.length} skill${all.length!==1?'s':''} active — injected into the system prompt for each message</div>
+  <div class="skills-grid">${all.map(s=>`<div class="skill-card" style="border-color:var(--green)">
+    <div class="skill-icon">${CAT_ICONS[s.category]||'📦'}</div>
+    <div class="skill-info">
+      <div class="skill-name">${escH(s.name)}</div>
+      <div class="skill-desc">${escH(s.description||'—')}</div>
+      <button onclick="toggleActiveSkill('${escH(s.slug)}')" class="btn btn-outline btn-xs" style="margin-top:6px;color:var(--red)">✕ Deactivate</button>
+    </div>
+  </div>`).join('')}</div>`;
+}
+
+async function loadSkillLibrary(){
+  const c=document.getElementById('skl-library-container');
+  if(c) c.innerHTML='<div class="empty"><div class="empty-icon">📚</div>Loading library…</div>';
+
+  const [library, cats] = await Promise.all([
+    api('/api/skills/library'),
+    api('/api/skills/library/categories'),
+  ]);
+
+  if(!Array.isArray(library)){
+    if(c) c.innerHTML='<div class="empty">Error loading skills.</div>';
+    return;
+  }
+
+  _libraryCache = library;
+  _updateSkillsBadge();
+
+  // populate category select
+  const catSel=document.getElementById('skl-cat');
+  if(catSel && Array.isArray(cats)){
+    catSel.innerHTML='<option value="">Toate categoriile</option>'+
+      cats.map(c=>`<option value="${escH(c.category)}">${escH(c.category.replace(/-/g,' '))} (${c.count})</option>`).join('');
+  }
+
+  // update tab label
+  const libBtn=document.getElementById('skl-tab-library');
+  if(libBtn) libBtn.textContent=`📚 Library (${library.length})`;
+
+  _renderLibrary(library);
+}
+
+// Legacy: load built-in skill cards
+async function loadBuiltinSkills(){
   const skills=await api('/api/skills');
   const container=document.getElementById('skills-container');
-  if(skills.error){ container.innerHTML=`<div class="empty">Error: ${escH(skills.error)}</div>`; return; }
+  if(!container) return;
   if(!Array.isArray(skills)||!skills.length){
-    container.innerHTML='<div class="empty"><div class="empty-icon">⚙</div>No skills found. Click "Discover Skills" to scan.</div>'; return;
+    container.innerHTML='<div class="empty"><div class="empty-icon">⚙</div>No built-in skills.</div>'; return;
   }
-  document.getElementById('nb-skills').textContent=skills.length;
   container.innerHTML=`<div class="skills-grid">${skills.map(s=>`<div class="skill-card">
     <div class="skill-icon">⚙</div>
     <div class="skill-info">
       <div class="skill-name">${escH(s.name||s.id||'Unnamed')}</div>
-      <div class="skill-desc">${escH(s.description||s.desc||'No description')}</div>
+      <div class="skill-desc">${escH(s.description||'No description')}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-        <span class="chip ${s.enabled!==false?'chip-green':'chip-yellow'} text-xs">${s.enabled!==false?'Active':'Disabled'}</span>
-        <span class="text-xs text-muted">v${escH(s.version||'1.0.0')}</span>
-        ${s.usage_count?`<span class="text-xs text-muted">${s.usage_count} uses</span>`:''}
-        <button class="btn btn-ghost btn-xs" style="margin-left:auto" onclick="toggleSkill('${escH(s.id||s.name||'')}',${s.enabled===false})">
-          ${s.enabled!==false?'Disable':'Enable'}
-        </button>
+        <span class="chip ${s.enabled!==false?'chip-green':'chip-yellow'}">${s.enabled!==false?'Active':'Disabled'}</span>
+        <button class="btn btn-ghost btn-xs" style="margin-left:auto" onclick="toggleSkill('${escH(s.id||'')}',${s.enabled===false})">${s.enabled!==false?'Disable':'Enable'}</button>
       </div>
     </div>
   </div>`).join('')}</div>`;
 }
 
+async function loadSkills(){ loadSkillLibrary(); }
+
 async function discoverSkills(){
   const r=await api('/api/skills/discover',{method:'POST'});
-  if(r.error){ toast('Discover failed: '+r.error,'error'); return; }
-  toast(`Found ${r.count||0} skill(s)`,'success');
-  loadSkills();
+  showToast(`Found ${r.count||0} skill(s)`,'success');
+  loadSkillLibrary();
 }
 
 async function toggleSkill(id, enable){
-  const r=await api(`/api/skills/${encodeURIComponent(id)}/toggle`,{method:'PUT',body:JSON.stringify({enabled:enable})});
-  if(r.error){ toast('Toggle failed: '+r.error,'error'); return; }
-  loadSkills();
+  await api(`/api/skills/${encodeURIComponent(id)}/toggle`,{method:'PUT',body:JSON.stringify({enabled:enable})});
+  loadBuiltinSkills();
 }
 
 /* ─────────── Cron ─────────── */
@@ -2523,14 +3176,27 @@ async function deleteMcpServer(id){
   loadMcp();
 }
 async function connectMcpServer(id){
-  showToast('Connecting…','info');
+  const btn=document.querySelector(`[data-mcp-connect="${id}"]`);
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Connecting…'; }
+  showToast('Connecting to MCP server…','info');
   const r=await api(`/api/mcp/${id}/connect`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-  if(r?.ok){ showToast('Connect initiated','success'); loadMcp(); }
+  if(r?.ok){
+    showToast(`Connected — ${r.tools_count} tool${r.tools_count!==1?'s':''} discovered`,'success');
+  } else if(r){
+    showToast(`Connection failed: ${r.error||'unknown error'}`,'error');
+  }
+  loadMcp();
+}
+async function disconnectMcpServer(id){
+  await api(`/api/mcp/${id}/disconnect`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  showToast('Disconnected','info');
+  loadMcp();
 }
 async function loadMcp(){
   const servers=await api('/api/mcp/');
   const nb=document.getElementById('nb-mcp');
-  if(nb) nb.textContent=servers?.length||0;
+  const connected=(servers||[]).filter(s=>s.status==='connected').length;
+  if(nb) nb.textContent=connected||servers?.length||0;
   const c=document.getElementById('mcp-container');
   if(!c) return;
   if(!servers?.length){
@@ -2542,6 +3208,9 @@ async function loadMcp(){
     const stCls=st==='connected'?'chip-green':st==='error'?'chip-red':'chip-yellow';
     const cmdStr=s.transport==='stdio'?`${s.command||''} ${(s.args||[]).join(' ')}`.trim():(s.url||'');
     const envCount=Object.keys(s.env||{}).length;
+    const toolsCount=s.tools_count||0;
+    const isConnected=st==='connected';
+    const isConnecting=st==='connecting';
     return `<div class="card" style="margin-bottom:10px">
       <div class="row" style="align-items:flex-start;gap:12px">
         <div style="flex:1;min-width:0">
@@ -2549,12 +3218,18 @@ async function loadMcp(){
             <span style="font-weight:700;font-size:14px">${escH(s.name)}</span>
             <span class="chip ${stCls}" style="font-size:11px">${st}</span>
             <span class="chip chip-blue" style="font-size:11px">${s.transport}</span>
+            ${isConnected&&toolsCount?`<span class="chip chip-green" style="font-size:11px">🛠 ${toolsCount} tool${toolsCount!==1?'s':''}</span>`:''}
           </div>
           ${cmdStr?`<div style="font-family:monospace;font-size:11px;color:var(--text2);word-break:break-all;margin-bottom:4px">${escH(cmdStr)}</div>`:''}
-          ${envCount?`<div style="font-size:11px;color:var(--text2)">${envCount} env var${envCount>1?'s':''} configured</div>`:''}
+          ${envCount?`<div style="font-size:11px;color:var(--text2);margin-bottom:2px">${envCount} env var${envCount>1?'s':''} configured</div>`:''}
+          ${s.error?`<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ ${escH(s.error)}</div>`:''}
+          ${isConnected&&s.tools?.length?`<details style="margin-top:6px"><summary style="font-size:11px;cursor:pointer;color:var(--text2)">Show tools</summary><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${s.tools.map(t=>`<span class="chip" style="font-size:10px" title="${escH(t.description||'')}">${escH(t.name)}</span>`).join('')}</div></details>`:''}
         </div>
         <div class="row" style="gap:6px;flex-shrink:0">
-          <button class="btn btn-outline btn-sm" onclick="connectMcpServer('${s.id}')" title="Connect">⚡ Connect</button>
+          ${isConnected
+            ?`<button class="btn btn-outline btn-sm" onclick="disconnectMcpServer('${s.id}')" title="Disconnect">⏹ Disconnect</button>`
+            :`<button class="btn btn-outline btn-sm" data-mcp-connect="${s.id}" onclick="connectMcpServer('${s.id}')" title="Connect" ${isConnecting?'disabled':''}>⚡ ${isConnecting?'Connecting…':'Connect'}</button>`
+          }
           <button class="btn btn-outline btn-sm" style="color:var(--red)" onclick="deleteMcpServer('${s.id}')" title="Delete">✕</button>
         </div>
       </div>
@@ -2942,6 +3617,8 @@ async function runMixture(){
   loadDashboard();
   // Pre-load badge counts
   loadMcp();
+  // Restore active skills badge from localStorage
+  _updateSkillsBadge();
 })();
 
 /* ══════════════════════════════════════════════════════════════
@@ -3332,6 +4009,453 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTO-DEBUG
+══════════════════════════════════════════════════════════════ */
+const DBG_ICONS = {ok:'✓', warn:'⚠', fail:'✗'};
+const DBG_COLORS = {ok:'var(--green)', warn:'#f0a500', fail:'var(--red)'};
+
+function runDebug(){
+  const btn = document.getElementById('debug-run-btn');
+  btn.disabled = true; btn.textContent = '⏳ Running…';
+  document.getElementById('debug-sections').innerHTML = '';
+  document.getElementById('debug-summary').style.display = 'none';
+
+  const es = new EventSource(`${API}/api/diagnostics/run`);
+
+  es.onmessage = (e) => {
+    let d;
+    try { d = JSON.parse(e.data); } catch(_){ return; }
+
+    if(d.event === 'section'){
+      const hasFail = d.results.some(r=>r.status==='fail');
+      const hasWarn = d.results.some(r=>r.status==='warn');
+      const secColor = hasFail ? 'var(--red)' : hasWarn ? '#f0a500' : 'var(--green)';
+      const secIcon  = hasFail ? '✗' : hasWarn ? '⚠' : '✓';
+
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.style.padding = '12px 16px';
+      el.innerHTML = `
+        <div class="row" style="margin-bottom:8px;gap:8px;align-items:center">
+          <span style="font-weight:700;font-size:13px">${escH(d.name)}</span>
+          <span style="font-size:11px;color:var(--text2)">${d.elapsed_ms}ms</span>
+          <span style="margin-left:auto;font-size:14px;color:${secColor}">${secIcon}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${d.results.map(r=>`
+            <div class="row" style="gap:6px;align-items:baseline;font-size:12px">
+              <span style="color:${DBG_COLORS[r.status]};font-weight:700;width:14px;flex-shrink:0">${DBG_ICONS[r.status]}</span>
+              <span style="flex:1">${escH(r.label)}</span>
+              ${r.detail ? `<span style="color:var(--text2);font-size:11px">${escH(r.detail)}</span>` : ''}
+            </div>
+            ${r.fix ? `<div style="font-size:11px;color:var(--accent);margin-left:20px;font-family:monospace">→ ${escH(r.fix)}</div>` : ''}
+          `).join('')}
+        </div>`;
+      document.getElementById('debug-sections').appendChild(el);
+    }
+
+    if(d.event === 'done'){
+      es.close();
+      const sum = document.getElementById('debug-summary');
+      sum.style.display = 'block';
+      document.getElementById('dbg-ok-count').textContent   = d.ok;
+      document.getElementById('dbg-warn-count').textContent = d.warn;
+      document.getElementById('dbg-fail-count').textContent = d.fail;
+      const msg = document.getElementById('dbg-status-msg');
+      if(d.status === 'ok'){
+        msg.style.color = 'var(--green)';
+        msg.textContent = '✓ Proiect la 100%';
+      } else if(d.status === 'warn'){
+        msg.style.color = '#f0a500';
+        msg.textContent = `⚠ Functional with ${d.warn} warnings`;
+      } else {
+        msg.style.color = 'var(--red)';
+        msg.textContent = `✗ ${d.fail} probleme de rezolvat`;
+      }
+      sum.style.borderColor = d.status==='ok'?'var(--green)':d.status==='warn'?'#f0a500':'var(--red)';
+      btn.disabled = false; btn.textContent = '▶ Run Debug';
+    }
+  };
+
+  es.onerror = () => {
+    es.close();
+    toast('Debug error: nu se poate conecta la server', 'error');
+    btn.disabled = false; btn.textContent = '▶ Run Debug';
+  };
+}
+
+function debugClear(){
+  document.getElementById('debug-sections').innerHTML = '';
+  document.getElementById('debug-summary').style.display = 'none';
+  document.getElementById('debug-run-btn').textContent = '▶ Run Debug';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BENCHMARK
+══════════════════════════════════════════════════════════════ */
+let bmModels = [];
+
+async function bmLoadPresets(){
+  const presets = await api('/api/benchmark/presets');
+  if(presets.error) return;
+  bmModels = presets.map(p=>({provider:p.provider,model:p.model,base_url:p.base_url||''}));
+  bmRenderModels();
+}
+
+function bmAddModel(){
+  bmModels.push({provider:'ollama',model:'',base_url:''});
+  bmRenderModels();
+}
+
+function bmRemoveModel(i){
+  bmModels.splice(i,1);
+  bmRenderModels();
+}
+
+function bmRenderModels(){
+  const el=document.getElementById('bm-models-list');
+  el.innerHTML=bmModels.map((m,i)=>`
+    <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
+      <select onchange="bmModels[${i}].provider=this.value" style="width:110px">
+        ${['ollama','openai','anthropic','groq','gemini'].map(p=>`<option value="${p}" ${m.provider===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+      <input type="text" value="${escH(m.model)}" placeholder="nome modello" style="flex:1;min-width:140px"
+        oninput="bmModels[${i}].model=this.value">
+      <input type="text" value="${escH(m.base_url)}" placeholder="base_url (optional)" style="width:220px"
+        oninput="bmModels[${i}].base_url=this.value">
+      <button class="btn btn-danger btn-xs" onclick="bmRemoveModel(${i})">✕</button>
+    </div>`).join('');
+}
+
+async function runBenchmark(){
+  const prompt=document.getElementById('bm-prompt').value.trim();
+  if(!prompt){toast('Introdu un prompt','error');return;}
+  const valid=bmModels.filter(m=>m.model.trim());
+  if(!valid.length){toast('Add at least one model','error');return;}
+
+  const btn=document.getElementById('bm-run-btn');
+  btn.disabled=true; btn.textContent='⏳ Running…';
+  const res=document.getElementById('bm-results');
+  res.innerHTML='';
+
+  // Create placeholder cards
+  valid.forEach((_,i)=>{
+    res.innerHTML+=`<div class="card" id="bm-card-${i}" style="min-height:120px">
+      <div style="font-weight:600;margin-bottom:8px;font-size:13px">${escH(valid[i].provider)} / ${escH(valid[i].model)}</div>
+      <div class="empty" style="padding:20px 0"><span class="spinner"></span> Waiting…</div>
+    </div>`;
+  });
+
+  try{
+    const resp=await fetch(`${API}/api/benchmark/run`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,models:valid.map(m=>({provider:m.provider,model:m.model,base_url:m.base_url||undefined}))})
+    });
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');
+      buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data:')) continue;
+        try{
+          const d=JSON.parse(line.slice(5));
+          if(d.event==='result'){
+            const card=document.getElementById(`bm-card-${d.idx}`);
+            if(!card) continue;
+            const ms=d.elapsed_ms; const tps=d.output_tokens&&ms?(d.output_tokens/(ms/1000)).toFixed(1):'-';
+            card.innerHTML=`
+              <div class="row" style="margin-bottom:6px;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font-weight:600;font-size:13px">${escH(d.provider)} / ${escH(d.model)}</span>
+                <span class="chip chip-green" style="font-size:10px">${ms}ms</span>
+                <span class="chip chip-blue" style="font-size:10px">${d.output_tokens||0} tok</span>
+                <span class="chip" style="font-size:10px">${tps} tok/s</span>
+              </div>
+              ${d.error
+                ?`<div style="color:var(--red);font-size:12px">Error: ${escH(d.error)}</div>`
+                :`<div style="font-size:13px;white-space:pre-wrap;max-height:300px;overflow:auto">${escH(d.text)}</div>`
+              }`;
+          }
+        }catch(e){}
+      }
+    }
+  }catch(e){ toast('Benchmark error: '+e,'error'); }
+  btn.disabled=false; btn.textContent='▶ Run Benchmark';
+}
+
+function bmClear(){
+  document.getElementById('bm-prompt').value='';
+  document.getElementById('bm-results').innerHTML='';
+  bmModels=[];
+  document.getElementById('bm-models-list').innerHTML='';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARKETPLACE
+══════════════════════════════════════════════════════════════ */
+async function loadMarketplace(){
+  const q=document.getElementById('mp-search')?.value||'';
+  const skills=await api(`/api/marketplace/skills?search=${encodeURIComponent(q)}`);
+  const grid=document.getElementById('mp-grid');
+  if(!Array.isArray(skills)||!skills.length){
+    grid.innerHTML='<div class="empty">No skills found.</div>'; return;
+  }
+  grid.innerHTML=skills.map(s=>`
+    <div class="card" style="display:flex;flex-direction:column;gap:8px">
+      <div class="row" style="gap:6px;align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${escH(s.name)}</div>
+          <div style="font-size:11px;color:var(--text2)">by ${escH(s.author||'community')}</div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:var(--text2)">
+          ${s.rating?`⭐ ${s.rating}`:''}
+          ${s.downloads?`· ${s.downloads} dl`:''}
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);flex:1">${escH(s.description||'')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${(s.tags||[]).map(t=>`<span class="chip" style="font-size:10px">${escH(t)}</span>`).join('')}
+      </div>
+      <div class="row" style="gap:6px;margin-top:4px">
+        <button class="btn btn-sm btn-outline" style="flex:1" onclick="installMarketSkill(${JSON.stringify(JSON.stringify(s))})">⬇ Install</button>
+        <button class="btn btn-outline btn-xs" onclick="shareMarketSkill(${JSON.stringify(JSON.stringify(s))})" title="Copy share code">🔗</button>
+      </div>
+    </div>`).join('');
+}
+
+async function installMarketSkill(skillJson){
+  const skill=JSON.parse(skillJson);
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(skill))));
+  const r=await api('/api/marketplace/import',{method:'POST',body:JSON.stringify({code})});
+  if(r.ok) toast(`Skill "${skill.name}" instalat!`,'success');
+  else toast('Eroare la instalare: '+(r.error||''),'error');
+}
+
+async function shareMarketSkill(skillJson){
+  const skill=JSON.parse(skillJson);
+  const r=await api('/api/marketplace/publish',{method:'POST',body:JSON.stringify({skill})});
+  if(r.code){
+    await navigator.clipboard.writeText(r.code).catch(()=>{});
+    toast('Code copied to clipboard!','success');
+  } else toast('Eroare la publicare','error');
+}
+
+function showImportCode(){
+  const m=document.getElementById('mp-import-modal');
+  m.style.display='flex';
+}
+
+async function doImportSkill(){
+  const code=document.getElementById('mp-import-code').value.trim();
+  if(!code){toast('Introdu codul','error');return;}
+  const r=await api('/api/marketplace/import',{method:'POST',body:JSON.stringify({code})});
+  if(r.ok){
+    toast(`Skill "${r.skill?.name}" importat!`,'success');
+    document.getElementById('mp-import-modal').style.display='none';
+    loadMarketplace();
+  } else toast('Eroare: '+(r.error||'cod invalid'),'error');
+}
+
+function showPublishSkill(){
+  const name=prompt('Numele skill-ului:');
+  if(!name) return;
+  const desc=prompt('Short description:');
+  const tags=(prompt('Tags (comma-separated): ')||'').split(',').map(t=>t.trim()).filter(Boolean);
+  const system=prompt('System prompt (agent instructions):');
+  const skill={name,description:desc||'',tags,system_extra:system||'',author:'me'};
+  shareMarketSkill(JSON.stringify(skill));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BATCH PROCESSING
+══════════════════════════════════════════════════════════════ */
+async function loadBatchTemplates(){
+  const templates=await api('/api/batch/templates');
+  if(!Array.isArray(templates)) return;
+  const el=document.getElementById('batch-templates');
+  if(!el) return;
+  el.innerHTML=templates.map(t=>`
+    <button class="btn btn-outline btn-xs" onclick="setBatchTemplate(${JSON.stringify(JSON.stringify(t))})"
+      title="${escH(t.name)}">${escH(t.icon)} ${escH(t.name)}</button>`).join('');
+}
+
+function setBatchTemplate(tJson){
+  const t=JSON.parse(tJson);
+  document.getElementById('batch-prompt').value=t.prompt;
+}
+
+async function runBatch(){
+  const prompt=document.getElementById('batch-prompt').value.trim();
+  const filesRaw=document.getElementById('batch-files').value.trim();
+  if(!prompt){toast('Introdu un prompt','error');return;}
+  if(!filesRaw){toast('Enter at least one file','error');return;}
+
+  const files=filesRaw.split('\n').map(f=>f.trim()).filter(Boolean);
+  const model=document.getElementById('batch-model').value.trim()||undefined;
+  const concurrency=parseInt(document.getElementById('batch-concurrency').value)||3;
+
+  const btn=document.getElementById('batch-run-btn');
+  btn.disabled=true; btn.textContent='⏳ Running…';
+
+  const progress=document.getElementById('batch-progress');
+  const bar=document.getElementById('batch-progress-bar');
+  const label=document.getElementById('batch-progress-label');
+  const results=document.getElementById('batch-results');
+  progress.style.display='block';
+  results.innerHTML='';
+  bar.style.width='0%';
+  label.textContent=`0 / ${files.length}`;
+
+  try{
+    const resp=await fetch(`${API}/api/batch/run`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,files,model,concurrency})
+    });
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');
+      buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data:')) continue;
+        try{
+          const d=JSON.parse(line.slice(5));
+          if(d.event==='item_done'){
+            const pct=Math.round((d.completed/d.total)*100);
+            bar.style.width=pct+'%';
+            label.textContent=`${d.completed} / ${d.total}`;
+            const ok=!d.error;
+            results.innerHTML=`<div class="card" style="border-left:3px solid var(--${ok?'green':'red'})">
+              <div class="row" style="margin-bottom:6px;gap:6px;flex-wrap:wrap">
+                <span style="font-weight:600;font-size:13px">${escH(d.label)}</span>
+                <span class="chip chip-${ok?'green':'red'}" style="font-size:10px">${ok?'OK':'ERROR'}</span>
+                <span class="chip" style="font-size:10px">${d.elapsed_ms}ms</span>
+                ${d.tokens?`<span class="chip chip-blue" style="font-size:10px">${d.tokens} tok</span>`:''}
+              </div>
+              ${d.error
+                ?`<div style="color:var(--red);font-size:12px">${escH(d.error)}</div>`
+                :`<pre style="font-size:12px;white-space:pre-wrap;max-height:200px;overflow:auto;margin:0">${escH(d.text)}</pre>`
+              }
+            </div>`+results.innerHTML;
+          }
+        }catch(e){}
+      }
+    }
+  }catch(e){ toast('Batch error: '+e,'error'); }
+
+  btn.disabled=false; btn.textContent='▶ Run Batch';
+}
+
+function batchClear(){
+  document.getElementById('batch-prompt').value='';
+  document.getElementById('batch-files').value='';
+  document.getElementById('batch-results').innerHTML='';
+  document.getElementById('batch-progress').style.display='none';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COST OPTIMIZER
+══════════════════════════════════════════════════════════════ */
+async function loadOptimizer(){
+  try{
+    const [cacheData, routerData] = await Promise.all([
+      api('/api/cache/stats'),
+      api('/api/optimizer/stats'),
+    ]);
+
+    // Top stats
+    document.getElementById('opt-cache-hits').textContent = cacheData.hits ?? 0;
+    document.getElementById('opt-cache-rate').textContent = `${cacheData.hit_rate_pct ?? 0}% hit rate`;
+    document.getElementById('opt-tokens-saved').textContent = (cacheData.tokens_saved ?? 0).toLocaleString();
+    const totalSaved = (cacheData.cost_saved_usd ?? 0) + (routerData.total_saved_usd ?? 0);
+    document.getElementById('opt-cost-saved').textContent = `$${totalSaved.toFixed(4)}`;
+
+    // Cache details
+    document.getElementById('opt-cache-status').textContent = cacheData.enabled ? '✓ Activ' : '✗ Dezactivat';
+    document.getElementById('opt-cache-status').style.background = cacheData.enabled ? 'var(--green)' : 'var(--red)';
+    document.getElementById('opt-cache-status').style.color = '#000';
+    document.getElementById('opt-cache-entries').textContent = cacheData.entries ?? 0;
+    document.getElementById('opt-cache-threshold').textContent = `${((cacheData.threshold ?? 0.92)*100).toFixed(0)}%`;
+    document.getElementById('opt-cache-ttl').textContent = `${cacheData.ttl_hours ?? 24}h`;
+  }catch(e){ toast('Optimizer offline: ' + e, 'error'); }
+
+  // Load cost table
+  try{
+    const table = await api('/api/optimizer/cost-table');
+    const el = document.getElementById('opt-cost-table');
+    const sorted = Object.entries(table).sort((a,b)=>(a[1].input+a[1].output)-(b[1].input+b[1].output));
+    el.innerHTML = sorted.map(([model,info])=>{
+      const tierColor = info.tier===0?'var(--text2)':info.tier===1?'var(--green)':info.tier===2?'var(--accent)':info.tier===3?'#f0a500':'var(--red)';
+      const tierLabel = ['free','cheap','mid','strong','expert'][info.tier] ?? '?';
+      return `<div class="row" style="padding:4px 6px;border-radius:4px;background:var(--bg3);gap:8px;font-size:11px">
+        <span style="flex:1;font-family:monospace">${escH(model)}</span>
+        <span style="color:var(--text2)">in $${info.input}/1K</span>
+        <span style="color:var(--text2)">out $${info.output}/1K</span>
+        <span style="color:${tierColor};font-weight:700;min-width:40px;text-align:right">${tierLabel}</span>
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+
+async function clearCache(){
+  if(!confirm('Clear all entries from the semantic cache?')) return;
+  const r = await api('/api/cache/clear', {method:'DELETE'});
+  toast(`Cache cleared: ${r.cleared} entries removed`, 'success');
+  loadOptimizer();
+}
+
+async function testCache(){
+  const prompt = document.getElementById('opt-cache-test-input').value.trim();
+  if(!prompt) return;
+  const res = document.getElementById('opt-cache-test-result');
+  res.style.display = 'block';
+  res.innerHTML = '<span style="color:var(--text2)">Checking…</span>';
+  try{
+    const r = await api('/api/cache/test', {method:'POST', body: JSON.stringify({prompt})});
+    if(r.hit){
+      res.innerHTML = `<span style="color:var(--green)">✓ Cache HIT — response found:</span><br><span style="color:var(--text2);font-size:11px">${escH(r.response_preview)}…</span>`;
+    } else {
+      res.innerHTML = `<span style="color:var(--text2)">✗ Cache MISS — no similar response found in cache</span>`;
+    }
+  }catch(e){ res.innerHTML = `<span style="color:var(--red)">${escH(String(e))}</span>`; }
+}
+
+async function testRoute(){
+  const prompt = document.getElementById('opt-route-input').value.trim();
+  if(!prompt) return;
+  const el = document.getElementById('opt-route-result');
+  el.style.display = 'block';
+  el.innerHTML = '<span style="color:var(--text2)">Analyze…</span>';
+  try{
+    const r = await api('/api/optimizer/route', {method:'POST', body: JSON.stringify({prompt})});
+    const tierColors = ['var(--text2)','var(--green)','var(--accent)','#f0a500','var(--red)'];
+    const tierNames = ['free','cheap','mid','strong','expert'];
+    el.innerHTML = `
+      <div class="row" style="gap:16px;flex-wrap:wrap">
+        <div><div style="font-size:10px;color:var(--text2)">Model recomandat</div>
+          <div style="font-size:15px;font-weight:700;font-family:monospace">${escH(r.model)}</div></div>
+        <div><div style="font-size:10px;color:var(--text2)">Complexitate</div>
+          <div style="font-size:15px;font-weight:700">${r.complexity_score}/10</div></div>
+        <div><div style="font-size:10px;color:var(--text2)">Tier</div>
+          <div style="font-size:15px;font-weight:700;color:${tierColors[r.tier]??'var(--text2)'}">${tierNames[r.tier]??r.tier}</div></div>
+        <div><div style="font-size:10px;color:var(--text2)">Cost estimat</div>
+          <div style="font-size:15px;font-weight:700;color:var(--green)">$${r.estimated_cost_usd}</div></div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text2)">${escH(r.reason)}</div>`;
+  }catch(e){ el.innerHTML = `<span style="color:var(--red)">${escH(String(e))}</span>`; }
 }
 
 </script>

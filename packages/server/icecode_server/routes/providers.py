@@ -174,8 +174,8 @@ async def _detect_models(provider_id: str, api_key: str, base_url: str = "") -> 
     if not catalog:
         return []
 
-    # Static model list for providers without a discovery endpoint
-    if catalog.get("static_models"):
+    # Static model list only as fallback when no API key provided
+    if catalog.get("static_models") and not api_key:
         return catalog["static_models"]
 
     if provider_id == "ollama":
@@ -209,18 +209,29 @@ async def _detect_models(provider_id: str, api_key: str, base_url: str = "") -> 
 
         # Different providers return models in different shapes
         if provider_id == "openrouter":
-            return [m["id"] for m in data.get("data", [])][:60]
+            return [m["id"] for m in data.get("data", [])][:100]
         elif provider_id == "together":
             items = data if isinstance(data, list) else data.get("result", data.get("data", []))
-            return [m.get("id", m.get("name", "")) for m in items if m.get("id") or m.get("name")][:60]
+            return [m.get("id", m.get("name", "")) for m in items if m.get("id") or m.get("name")][:100]
         elif provider_id == "google":
-            return [m["name"].replace("models/", "") for m in data.get("models", [])
-                    if "generateContent" in m.get("supportedGenerationMethods", [])]
+            # Filter to only text generation models, strip "models/" prefix
+            models = []
+            for m in data.get("models", []):
+                methods = m.get("supportedGenerationMethods", [])
+                if "generateContent" in methods or "streamGenerateContent" in methods:
+                    name = m["name"].replace("models/", "")
+                    if name not in models:
+                        models.append(name)
+            return models
+        elif provider_id == "anthropic":
+            # Anthropic returns OpenAI-compatible list sorted newest first
+            items = data.get("data", [])
+            return [m["id"] for m in items if m.get("id")]
         else:
-            # OpenAI-compatible (openai, groq, deepseek, custom)
+            # OpenAI-compatible (openai, groq, deepseek, mistral, custom)
             items = data.get("data", data.get("models", []))
-            return sorted([m["id"] for m in items if m.get("id")],
-                          key=lambda x: (0 if "gpt-4" in x or "claude" in x else 1, x))
+            ids = [m["id"] for m in items if m.get("id")]
+            return sorted(ids, key=lambda x: (0 if any(k in x for k in ("gpt-4","o1","o3","claude")) else 1, x))
     except Exception:
         return []
 

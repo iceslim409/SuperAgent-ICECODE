@@ -1,0 +1,14 @@
+[project]
+name = "icecode-tools"
+version = "2.0.0"
+description = "ICECODE Tools — agent tool implementations (browser, file, shell, vision, etc.)"
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["icecode_tools*"]

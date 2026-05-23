@@ -17,7 +17,7 @@ fail() { echo -e "${RED}✗${RESET} $1"; exit 1; }
 echo -e "${BOLD}"
 echo "╔══════════════════════════════════════════════════════╗"
 echo "║       ICECODE Super-Agent Network — Installer        ║"
-echo "║                    v1.0.0                            ║"
+echo "║                    v2.0.0                            ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo -e "${RESET}"
 
@@ -63,7 +63,8 @@ pip install --quiet \
     loguru>=0.7.2 \
     pydantic>=2.0.0 \
     python-multipart>=0.0.9 \
-    websockets>=12.0
+    websockets>=12.0 \
+    ddgs>=6.0.0
 
 ok "Core dependencies installed"
 
@@ -86,11 +87,13 @@ pip install --quiet pytest pytest-asyncio 2>/dev/null && ok "Test dependencies i
 # Install ICECODE packages in development mode
 info "Installing ICECODE packages..."
 pip install --quiet -e packages/core 2>/dev/null && ok "packages/core installed" || \
-  info "Note: packages/core pyproject.toml not found, using PYTHONPATH"
+  info "Note: packages/core install skipped, using PYTHONPATH"
 
-pip install --quiet -e packages/server 2>/dev/null || true
+pip install --quiet -e packages/tools 2>/dev/null && ok "packages/tools installed" || true
 
-pip install --quiet --no-deps -e packages/cli 2>/dev/null && ok "packages/cli (icecode_cli) installed" || true
+pip install --quiet -e packages/server 2>/dev/null && ok "packages/server installed" || true
+
+pip install --quiet --no-deps -e packages/cli 2>/dev/null && ok "packages/cli installed" || true
 
 # ── 4. Create .env if missing ─────────────────────────────────────────────────
 if [ ! -f ".env" ] && [ -f ".env.example" ]; then

@@ -49,7 +49,7 @@ fi
 # ── Python venv ──────────────────────────────────────────────────
 if [ ! -f "$VENV/bin/python" ]; then
     warn "Virtual environment not found at $VENV"
-    warn "Run ./scripts/setup.sh first (or: uv venv .venv --python 3.12)"
+    warn "Run: bash install.sh"
     exit 1
 fi
 
@@ -115,7 +115,7 @@ echo ""
 # ── Open terminal with live logs ──────────────────────────────────
 echo ""
 echo "  Opening log terminal..."
-if command -v gnome-terminal &> /dev/null; then
+if command -v gnome-terminal &> /dev/null && gnome-terminal --version &>/dev/null 2>&1; then
     gnome-terminal \
         --title="ICECODE Server Logs" \
         -- bash -c "

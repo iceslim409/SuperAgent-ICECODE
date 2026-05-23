@@ -10,9 +10,9 @@ import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
@@ -111,6 +111,26 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Optional API key auth — set ICECODE_API_KEY env var to enable
+    _api_key = os.getenv("ICECODE_API_KEY", "").strip()
+    if _api_key:
+        _SKIP_AUTH = {"/", "/health", "/manifest.json", "/sw.js"}
+
+        @app.middleware("http")
+        async def api_key_auth(request: Request, call_next):
+            path = request.url.path
+            if not path.startswith("/api/") or path in _SKIP_AUTH:
+                return await call_next(request)
+            provided = (
+                request.headers.get("X-API-Key")
+                or request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+            )
+            if provided != _api_key:
+                return JSONResponse({"error": "Unauthorized — invalid API key"}, status_code=401)
+            return await call_next(request)
+
+        logger.info("  [🔐] API key authentication enabled")
+
     # Register all routes
     _register_routes(app)
 
@@ -127,7 +147,10 @@ def _register_routes(app: FastAPI):
 
         @app.get("/", include_in_schema=False)
         async def serve_ui():
-            return FileResponse(str(_index))
+            return FileResponse(
+                str(_index),
+                headers={"Cache-Control": "no-store, must-revalidate", "Pragma": "no-cache"},
+            )
 
         # Serve PWA files directly at root
         @app.get("/manifest.json", include_in_schema=False)
@@ -151,6 +174,11 @@ def _register_routes(app: FastAPI):
         response = await call_next(request)
         if response.status_code >= 500:
             _REQUEST_COUNT["errors"] += 1
+        # Prevent browser from caching HTML pages
+        ct = response.headers.get("content-type", "")
+        if "text/html" in ct:
+            response.headers["Cache-Control"] = "no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
         return response
 
     @app.get("/health")
@@ -215,6 +243,11 @@ def _register_routes(app: FastAPI):
     _try_register(app, "routes.knowledge")
     _try_register(app, "routes.router_api")
     _try_register(app, "routes.opencode_compat")
+    _try_register(app, "routes.benchmark")
+    _try_register(app, "routes.marketplace")
+    _try_register(app, "routes.batch")
+    _try_register(app, "routes.cache")
+    _try_register(app, "routes.optimizer")
 
     # Serve React UI bundle la /desktop/
     _react_dist = Path(__file__).parents[2] / "react-ui" / "dist"

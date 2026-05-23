@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+import time
 import uuid
 from pathlib import Path
 from typing import List, Optional
@@ -19,6 +20,16 @@ sys.path.insert(0, str(Path(__file__).parents[4] / "core"))
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
+# Cache configured providers for 30s to avoid reading providers.json on every request
+_providers_cache: list = []
+_providers_cache_ts: float = 0.0
+_PROVIDERS_TTL = 30.0
+
+# Cache Ollama model list for 60s (avoids blocking httpx.get on every request)
+_ollama_cache: str = ""
+_ollama_cache_ts: float = 0.0
+_OLLAMA_TTL = 60.0
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -30,6 +41,9 @@ class ChatRequest(BaseModel):
     stream: bool = True
     max_iterations: int = 10
     enable_computer: bool = False
+    autopilot: bool = False
+    active_skills: List[str] = []    # skill slugs/ids to inject into system prompt
+    auto_skills: bool = False         # auto-detect relevant skills from message
 
 
 class SessionMessage(BaseModel):
@@ -48,20 +62,72 @@ async def _sse_stream(request: ChatRequest):
     existing = store.load(session_id)
     history = existing["messages"] if existing else []
 
-    # ICECODE Intelligent Model Router: auto-select model if none specified
+    # ── Semantic Cache check ──────────────────────────────────────────────────
+    try:
+        from icecode.cache import get_cache as _get_cache
+        _cache = _get_cache()
+        cached = _cache.get(request.message, model=request.model or "")
+        if cached:
+            yield f"data: {json.dumps({'type': 'cache_hit', 'message': 'Response from cache (0 tokens consumed)'})}\n\n"
+            yield f"data: {json.dumps({'type': 'text', 'content': cached})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'usage': {'total_tokens': 0, 'cached': True}})}\n\n"
+            return
+    except Exception:
+        _cache = None
+
+    # ── Context Compression ───────────────────────────────────────────────────
+    compression_info = None
+    if history:
+        try:
+            from icecode.optimizer.context_compressor import compress as _compress
+            compressed_history, tokens_saved = _compress(history)
+            if tokens_saved > 0:
+                history = compressed_history
+                compression_info = {"tokens_saved": tokens_saved}
+        except Exception:
+            pass
+
+    # ── Model selection: explicit > configured default (no blind auto-routing) ──
     if request.model:
         actual_model = request.model
         router_info = None
     else:
+        # Always use the configured default — avoids routing to unconfigured cloud models
+        actual_model = _default_model()
+        router_info = None
+
+    # Build system_extra from active skills
+    system_extra = ""
+    all_skill_slugs = list(request.active_skills)
+
+    # Auto-detect additional relevant skills from message
+    auto_detected: List[str] = []
+    if request.auto_skills:
         try:
-            from icecode.router import get_router
-            _r = get_router()
-            decision = _r.route(request.message)
-            actual_model = decision.model
-            router_info = {"model": actual_model, "complexity": decision.complexity.value, "reason": decision.reason}
-        except Exception:
-            actual_model = _default_model()
-            router_info = None
+            from icecode_server.routes.skills import auto_detect_skills
+            auto_detected = auto_detect_skills(request.message, limit=4)
+            # merge without duplicates
+            for s in auto_detected:
+                if s not in all_skill_slugs:
+                    all_skill_slugs.append(s)
+        except Exception as e:
+            logger.warning(f"Auto-detect skills failed: {e}")
+
+    if all_skill_slugs:
+        try:
+            from icecode_server.routes.skills import load_skill_content
+            injected = []
+            for sid in all_skill_slugs[:8]:
+                content = load_skill_content(sid)
+                if content:
+                    label = f"{sid} [auto]" if sid in auto_detected else sid
+                    injected.append(f"### SKILL: {label}\n{content[:3000]}")
+            if injected:
+                system_extra = "\n\n=== ACTIVE SKILLS ===\n" + "\n\n---\n\n".join(injected)
+                if auto_detected:
+                    system_extra = f"\n\n[Auto-detected skills: {', '.join(auto_detected)}]" + system_extra
+        except Exception as e:
+            logger.warning(f"Could not load skills: {e}")
 
     agent = ICECodeAgent(
         model=actual_model,
@@ -70,6 +136,8 @@ async def _sse_stream(request: ChatRequest):
         max_iterations=request.max_iterations,
         session_id=session_id,
         enable_computer=request.enable_computer,
+        autopilot=request.autopilot,
+        system_extra=system_extra,
     )
     agent.history = history
 
@@ -77,8 +145,39 @@ async def _sse_stream(request: ChatRequest):
     if router_info:
         yield f"data: {json.dumps({'type': 'router', **router_info})}\n\n"
 
+    # Emit compression info if context was trimmed
+    if compression_info:
+        yield f"data: {json.dumps({'type': 'compression', **compression_info})}\n\n"
+
+    # Emit auto-detected skills so UI can display them
+    if auto_detected:
+        yield f"data: {json.dumps({'type': 'skills_detected', 'skills': auto_detected})}\n\n"
+
+    full_response = []
     async for chunk in agent.stream(request.message):
+        if chunk.get("type") == "text":
+            full_response.append(chunk.get("content", ""))
         yield f"data: {json.dumps(chunk)}\n\n"
+
+    # Store response in semantic cache
+    if _cache is not None and full_response:
+        try:
+            u = agent.usage.to_dict()
+            tokens = u.get("prompt_tokens", 0) + u.get("completion_tokens", 0)
+            info = {}
+            try:
+                from icecode.optimizer.cost_router import COST_TABLE
+                info = COST_TABLE.get(actual_model, COST_TABLE.get("__local__", {}))
+            except Exception:
+                pass
+            cost = (
+                u.get("prompt_tokens", 0) * info.get("input", 0) +
+                u.get("completion_tokens", 0) * info.get("output", 0)
+            ) / 1000
+            _cache.set(request.message, "".join(full_response),
+                       model=actual_model, tokens_used=tokens, cost_usd=cost)
+        except Exception:
+            pass
 
     # Persist session
     try:
@@ -108,12 +207,38 @@ async def _sse_stream(request: ChatRequest):
         pass
 
 
+def _get_configured_providers() -> list:
+    """Load enabled providers from providers.json that have an API key and models (cached 30s)."""
+    global _providers_cache, _providers_cache_ts
+    now = time.monotonic()
+    if now - _providers_cache_ts < _PROVIDERS_TTL:
+        return _providers_cache
+    try:
+        from icecode_server.routes.providers import _load_providers
+        _providers_cache = [
+            p for p in _load_providers()
+            if p.get("enabled", True) and p.get("api_key") and p.get("models")
+        ]
+    except Exception:
+        _providers_cache = []
+    _providers_cache_ts = now
+    return _providers_cache
+
+
 def _default_provider() -> str:
+    """Return first fully configured provider (has key + models), fallback to ollama."""
+    providers = _get_configured_providers()
+    if providers:
+        return providers[0]["id"]
     return "ollama"
 
 
-def _default_model() -> str:
-    """Pick best available Ollama model for chat."""
+def _best_ollama_model() -> str:
+    """Return best installed Ollama model (cached 60s). Never blocks the event loop."""
+    global _ollama_cache, _ollama_cache_ts
+    now = time.monotonic()
+    if _ollama_cache and now - _ollama_cache_ts < _OLLAMA_TTL:
+        return _ollama_cache
     try:
         import httpx
         r = httpx.get("http://localhost:11434/api/tags", timeout=2)
@@ -126,11 +251,53 @@ def _default_model() -> str:
             for p in prefs:
                 for m in installed:
                     if m == p or m.startswith(p.split(":")[0] + ":" + p.split(":")[1]):
+                        _ollama_cache = m
+                        _ollama_cache_ts = now
                         return m
-            return installed[0] if installed else "qwen2.5:7b"
+            if installed:
+                _ollama_cache = installed[0]
+                _ollama_cache_ts = now
+                return installed[0]
     except Exception:
         pass
     return "qwen2.5:7b"
+
+
+def _default_model() -> str:
+    """Return default model from first fully configured provider, fallback to best Ollama."""
+    providers = _get_configured_providers()
+    if providers:
+        p = providers[0]
+        model = p.get("default_model") or (p.get("models") or [None])[0]
+        if model:
+            return model
+    return _best_ollama_model()
+
+
+@router.get("/available-models")
+async def available_models():
+    """Combined list of all available models (local + cloud providers)."""
+    result = {"local": {}, "cloud": [], "default_provider": _default_provider(), "default_model": _default_model()}
+
+    # Ollama local models
+    try:
+        import httpx
+        r = httpx.get("http://localhost:11434/api/tags", timeout=2)
+        if r.status_code == 200:
+            result["local"]["ollama"] = [m["name"] for m in r.json().get("models", [])]
+    except Exception:
+        pass
+
+    # Configured cloud providers (already filtered for key+models in _get_configured_providers)
+    for p in _get_configured_providers():
+        result["cloud"].append({
+            "id": p["id"],
+            "name": p.get("name", p["id"]),
+            "models": p["models"],
+            "default_model": p.get("default_model", ""),
+        })
+
+    return result
 
 
 @router.post("/stream")
@@ -269,7 +436,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str):
                     await websocket.send_json({"type": "pong"})
                 else:
                     await message_queue.put(data)
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, Exception):
             await message_queue.put(None)
 
     message_queue: asyncio.Queue = asyncio.Queue()
