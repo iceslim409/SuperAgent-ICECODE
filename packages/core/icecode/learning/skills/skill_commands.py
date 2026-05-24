@@ -12,7 +12,10 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from icecode.icecode_constants import display_hermes_home
-from agent.skill_preprocessing import (
+try:
+    from agent.skill_preprocessing import (
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.skill_preprocessing import (
     expand_inline_shell as _expand_inline_shell,
     load_skills_config as _load_skills_config,
     substitute_template_vars as _substitute_template_vars,

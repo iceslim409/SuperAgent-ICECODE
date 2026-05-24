@@ -15,7 +15,10 @@ from pathlib import Path
 from icecode.icecode_constants import get_hermes_home, get_skills_dir, is_wsl
 from typing import Optional
 
-from agent.skill_utils import (
+try:
+    from agent.skill_utils import (
+except (ImportError, ModuleNotFoundError):
+    from icecode.learning.skills.skill_utils import (
     extract_skill_conditions,
     extract_skill_description,
     get_all_skills_dirs,

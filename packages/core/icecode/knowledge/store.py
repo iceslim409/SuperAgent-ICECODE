@@ -33,6 +33,22 @@ class VectorStore:
                 self._index = faiss.read_index(str(_INDEX_FILE))
                 self._meta = json.loads(_META_FILE.read_text()) if _META_FILE.exists() else []
                 self._sources = json.loads(_SOURCES_FILE.read_text()) if _SOURCES_FILE.exists() else {}
+                # Repair inconsistency: FAISS index may have more/fewer vectors than metadata.
+                # Truncate to the smaller count so all returned indices are valid.
+                if self._index.ntotal != len(self._meta):
+                    n = min(self._index.ntotal, len(self._meta))
+                    logger.warning(
+                        f"VectorStore inconsistency: index has {self._index.ntotal} vectors "
+                        f"but {len(self._meta)} metadata entries — truncating to {n}"
+                    )
+                    self._meta = self._meta[:n]
+                    if self._index.ntotal > n:
+                        new_idx = faiss.IndexFlatL2(self.dim)
+                        if n > 0:
+                            vectors = faiss.rev_swig_ptr(self._index.get_xb(), n * self.dim)
+                            import numpy as np
+                            new_idx.add(np.array(vectors).reshape(n, self.dim).astype("float32"))
+                        self._index = new_idx
                 logger.debug(f"VectorStore loaded: {len(self._meta)} chunks, {len(self._sources)} sources")
             else:
                 self._index = faiss.IndexFlatL2(self.dim)

@@ -10,17 +10,23 @@ from loguru import logger
 
 # Ollama embedding model — nomic-embed-text is 768-dim, fast, fully local
 _EMBED_MODEL = os.environ.get("ICECODE_EMBED_MODEL", "nomic-embed-text")
-_OLLAMA_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+
+
+def _ollama_host() -> str:
+    """Return the bare Ollama host URL (without /v1 suffix)."""
+    url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    return url.rstrip("/").removesuffix("/v1")
 
 
 def _embed_via_ollama(texts: List[str]) -> np.ndarray:
     """Call Ollama /api/embeddings for a batch of texts."""
+    base = _ollama_host()
     embeddings = []
     with httpx.Client(timeout=30) as client:
         for text in texts:
             try:
                 resp = client.post(
-                    f"{_OLLAMA_URL}/api/embeddings",
+                    f"{base}/api/embeddings",
                     json={"model": _EMBED_MODEL, "prompt": text},
                 )
                 resp.raise_for_status()
@@ -87,7 +93,7 @@ def check_embedder_available() -> bool:
     """Return True if Ollama embedding model is reachable."""
     try:
         resp = httpx.post(
-            f"{_OLLAMA_URL}/api/embeddings",
+            f"{_ollama_host()}/api/embeddings",
             json={"model": _EMBED_MODEL, "prompt": "test"},
             timeout=5,
         )

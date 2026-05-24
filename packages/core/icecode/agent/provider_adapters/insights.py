@@ -22,7 +22,10 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any, Dict, List
 
-from agent.usage_pricing import (
+try:
+    from agent.usage_pricing import (
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.usage_pricing import (
     CanonicalUsage,
     DEFAULT_PRICING,
     estimate_usage_cost,

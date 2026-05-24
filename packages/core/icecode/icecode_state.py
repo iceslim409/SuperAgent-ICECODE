@@ -23,7 +23,10 @@ import threading
 import time
 from pathlib import Path
 
-from agent.memory_manager import sanitize_context
+try:
+    from agent.memory_manager import sanitize_context
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.memory_manager import sanitize_context
 from icecode.icecode_constants import get_hermes_home
 from typing import Any, Callable, Dict, List, Optional, TypeVar
 

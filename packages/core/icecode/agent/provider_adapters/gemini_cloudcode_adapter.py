@@ -38,8 +38,14 @@ from typing import Any, Dict, Iterator, List, Optional
 import httpx
 
 from agent import google_oauth
-from agent.gemini_schema import sanitize_gemini_tool_parameters
-from agent.google_code_assist import (
+try:
+    from agent.gemini_schema import sanitize_gemini_tool_parameters
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.gemini_schema import sanitize_gemini_tool_parameters
+try:
+    from agent.google_code_assist import (
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.google_code_assist import (
     CODE_ASSIST_ENDPOINT,
     CodeAssistError,
     ProjectContext,

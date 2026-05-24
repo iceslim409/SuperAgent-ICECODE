@@ -18,7 +18,10 @@ import uuid
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
-from agent.prompt_builder import DEFAULT_AGENT_IDENTITY
+try:
+    from agent.prompt_builder import DEFAULT_AGENT_IDENTITY
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.prompt_builder import DEFAULT_AGENT_IDENTITY
 
 logger = logging.getLogger(__name__)
 

@@ -49,7 +49,10 @@ import fire
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn, TimeRemainingColumn
 from rich.console import Console
 from icecode.icecode_constants import OPENROUTER_BASE_URL, get_hermes_home
-from agent.retry_utils import jittered_backoff
+try:
+    from agent.retry_utils import jittered_backoff
+except (ImportError, ModuleNotFoundError):
+    def jittered_backoff(*a, **kw): return 0
 
 # Load .env — try icecode_cli first, fallback to python-dotenv / manual load
 try:

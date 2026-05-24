@@ -36,15 +36,19 @@ class KnowledgeManager:
         """True if FAISS and Ollama embedder are both ready."""
         if not self._store.available:
             return False
-        if self._embedder_ok is None:
-            self._embedder_ok = check_embedder_available()
-            if not self._embedder_ok:
+        # Only cache True — always retry if previously unavailable so that
+        # starting Ollama after server startup is picked up automatically.
+        if not self._embedder_ok:
+            ok = check_embedder_available()
+            if ok:
+                self._embedder_ok = True
+            else:
                 logger.warning(
                     "Knowledge base embedder unavailable — "
                     f"ensure Ollama is running and '{self._retriever.embed_model}' is pulled. "
                     f"Run: ollama pull {self._retriever.embed_model}"
                 )
-        return self._embedder_ok
+        return bool(self._embedder_ok)
 
     def _unavailable_msg(self) -> str:
         return (

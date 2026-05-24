@@ -9,26 +9,45 @@ from fastapi.responses import Response
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
 
+def _store():
+    from icecode.agent.core import get_session_store
+    return get_session_store()
+
+
 @router.get("/")
 async def list_sessions():
     try:
-        from icecode.config.settings import ICECodeSettings
-        from icecode.state import ICECodeState
-        cfg = ICECodeSettings()
-        state = ICECodeState(str(cfg.db_path))
-        return await state.list_sessions()
-    except Exception as e:
+        return _store().list_sessions()
+    except Exception:
+        return []
+
+
+@router.get("/search")
+async def search_sessions(q: str = ""):
+    """Text search across session titles and previews."""
+    try:
+        sessions = _store().list_sessions()
+        if not q:
+            return sessions
+        q_lower = q.lower()
+        return [
+            s for s in sessions
+            if q_lower in s.get("title", "").lower()
+            or q_lower in s.get("preview", "").lower()
+        ]
+    except Exception:
         return []
 
 
 @router.get("/{session_id}")
 async def get_session(session_id: str):
     try:
-        from icecode.config.settings import ICECodeSettings
-        from icecode.state import ICECodeState
-        cfg = ICECodeSettings()
-        state = ICECodeState(str(cfg.db_path))
-        return await state.get_session(session_id)
+        data = _store().load(session_id)
+        if not data:
+            raise HTTPException(404, "Session not found")
+        return data
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(404, str(e))
 
@@ -36,11 +55,10 @@ async def get_session(session_id: str):
 @router.delete("/{session_id}")
 async def delete_session(session_id: str):
     try:
-        from icecode.config.settings import ICECodeSettings
-        from icecode.state import ICECodeState
-        cfg = ICECodeSettings()
-        state = ICECodeState(str(cfg.db_path))
-        await state.delete_session(session_id)
+        store = _store()
+        path = store.session_dir / f"{session_id}.json"
+        if path.exists():
+            path.unlink()
         return {"ok": True}
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -50,11 +68,7 @@ async def delete_session(session_id: str):
 async def export_session(session_id: str, format: str = "json"):
     """Export a session as JSON or Markdown."""
     try:
-        from icecode.config.settings import ICECodeSettings
-        from icecode.state import ICECodeState
-        cfg = ICECodeSettings()
-        state = ICECodeState(str(cfg.db_path))
-        session = await state.get_session(session_id)
+        session = _store().load(session_id)
         if not session:
             raise HTTPException(404, "Session not found")
 
@@ -67,6 +81,10 @@ async def export_session(session_id: str, format: str = "json"):
             for m in messages:
                 role = m.get("role", "unknown").capitalize()
                 content = m.get("content", "")
+                if isinstance(content, list):
+                    content = " ".join(
+                        p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") == "text"
+                    )
                 lines.append(f"**{role}**\n\n{content}\n\n---\n")
             body = "\n".join(lines)
             return Response(
@@ -85,16 +103,3 @@ async def export_session(session_id: str, format: str = "json"):
         raise
     except Exception as e:
         raise HTTPException(500, str(e))
-
-
-@router.get("/search")
-async def search_sessions(q: str = ""):
-    """FTS5 full-text search across all sessions."""
-    try:
-        from icecode.config.settings import ICECodeSettings
-        from icecode.state import ICECodeState
-        cfg = ICECodeSettings()
-        state = ICECodeState(str(cfg.db_path))
-        return await state.search_sessions(q)
-    except Exception as e:
-        return []
