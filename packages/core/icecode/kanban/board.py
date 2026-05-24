@@ -83,7 +83,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-from toolsets import get_toolset_names
+from icecode.toolsets import get_toolset_names
 
 
 # ---------------------------------------------------------------------------

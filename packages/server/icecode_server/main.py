@@ -103,9 +103,15 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    _cors_raw = os.getenv("ICECODE_CORS_ORIGINS", "")
+    _cors_origins = (
+        [o.strip() for o in _cors_raw.split(",") if o.strip()]
+        if _cors_raw
+        else ["http://localhost:13210", "http://127.0.0.1:13210"]
+    )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=_cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
