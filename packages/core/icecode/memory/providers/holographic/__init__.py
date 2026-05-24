@@ -26,7 +26,7 @@ try:
     from agent.memory_provider import MemoryProvider
 except (ImportError, ModuleNotFoundError):
     from icecode.agent.memory_provider import MemoryProvider
-from tools.registry import tool_error
+from icecode_tools.registry import tool_error
 from .store import MemoryStore
 from .retrieval import FactRetriever
 from icecode_cli.hermes_cli.config import cfg_get

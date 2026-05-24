@@ -757,7 +757,7 @@ def _build_patch_mode_content(patch_text: str) -> List[Any]:
         return [acp.tool_content(acp.text_block(""))]
 
     try:
-        from tools.patch_parser import OperationType, parse_v4a_patch
+        from icecode_tools.patch_parser import OperationType, parse_v4a_patch
 
         operations, error = parse_v4a_patch(patch_text)
         if error or not operations:

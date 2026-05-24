@@ -54,7 +54,7 @@ Available tools:
 - skill_view: Load full skill content (progressive disclosure tier 2-3)
 
 Usage:
-    from tools.skills_tool import skills_list, skill_view, check_skills_requirements
+    from icecode_tools.skills_tool import skills_list, skill_view, check_skills_requirements
 
     # List all skills (returns metadata only - token efficient)
     result = skills_list()
@@ -76,7 +76,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Set, Tuple
 
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 from icecode_cli.hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
@@ -1119,7 +1119,7 @@ def skill_view(
 
         # If a specific file path is requested, read that instead
         if file_path and skill_dir:
-            from tools.path_security import validate_within_dir, has_traversal_component
+            from icecode_tools.path_security import validate_within_dir, has_traversal_component
 
             # Security: Prevent path traversal attacks
             if has_traversal_component(file_path):
@@ -1332,7 +1332,7 @@ def skill_view(
         ]
         if available_env_names:
             try:
-                from tools.env_passthrough import register_env_passthrough
+                from icecode_tools.env_passthrough import register_env_passthrough
 
                 register_env_passthrough(available_env_names)
             except Exception:
@@ -1351,7 +1351,7 @@ def skill_view(
         missing_cred_files: list = []
         if required_cred_files_raw:
             try:
-                from tools.credential_files import register_credential_files
+                from icecode_tools.credential_files import register_credential_files
 
                 missing_cred_files = register_credential_files(required_cred_files_raw)
                 if missing_cred_files:
@@ -1545,7 +1545,7 @@ def _skill_view_with_bump(args, **kw):
             # qualified forms ("plugin:skill") return with the canonical name.
             resolved = parsed.get("name") or name
             if resolved:
-                from tools.skill_usage import bump_use, bump_view
+                from icecode_tools.skill_usage import bump_use, bump_view
                 bump_view(str(resolved))
                 # A skill_view tool call is the agent actively loading the skill
                 # to act on it — that counts as use, not just a browse/view.

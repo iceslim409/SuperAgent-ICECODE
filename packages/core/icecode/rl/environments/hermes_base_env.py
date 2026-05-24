@@ -62,7 +62,7 @@ from atroposlib.type_definitions import Item
 
 from environments.agent_loop import AgentResult, HermesAgentLoop
 from environments.tool_context import ToolContext
-from tools.budget_config import (
+from icecode_tools.budget_config import (
     DEFAULT_RESULT_SIZE_CHARS,
     DEFAULT_TURN_BUDGET_CHARS,
     DEFAULT_PREVIEW_SIZE_CHARS,
@@ -209,7 +209,7 @@ class HermesAgentEnvConfig(BaseEnvConfig):
 
     def build_budget_config(self):
         """Build a BudgetConfig from env config fields."""
-        from tools.budget_config import BudgetConfig
+        from icecode_tools.budget_config import BudgetConfig
         return BudgetConfig(
             default_result_size=self.default_result_size_chars,
             turn_budget=self.turn_budget_chars,

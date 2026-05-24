@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 # Import security scanner — external hub installs always get scanned;
 # agent-created skills only get scanned when skills.guard_agent_created is on.
 try:
-    from tools.skills_guard import scan_skill, should_allow_install, format_scan_report
+    from icecode_tools.skills_guard import scan_skill, should_allow_install, format_scan_report
     _GUARD_AVAILABLE = True
 except ImportError:
     _GUARD_AVAILABLE = False
@@ -149,7 +149,7 @@ def _pinned_guard(name: str) -> Optional[str]:
     rather than block on a broken telemetry file.
     """
     try:
-        from tools import skill_usage
+        from icecode_tools import skill_usage
         rec = skill_usage.get_record(name)
         if rec.get("pinned"):
             return (
@@ -303,7 +303,7 @@ def _validate_file_path(file_path: str) -> Optional[str]:
     Validate a file path for write_file/remove_file.
     Must be under an allowed subdirectory and not escape the skill dir.
     """
-    from tools.path_security import has_traversal_component
+    from icecode_tools.path_security import has_traversal_component
 
     if not file_path:
         return "file_path is required."
@@ -328,7 +328,7 @@ def _validate_file_path(file_path: str) -> Optional[str]:
 
 def _resolve_skill_target(skill_dir: Path, file_path: str) -> Tuple[Optional[Path], Optional[str]]:
     """Resolve a supporting-file path and ensure it stays within the skill directory."""
-    from tools.path_security import validate_within_dir
+    from icecode_tools.path_security import validate_within_dir
 
     target = skill_dir / file_path
     error = validate_within_dir(target, skill_dir)
@@ -507,7 +507,7 @@ def _patch_skill(
     # This handles whitespace normalization, indentation differences,
     # escape sequences, and block-anchor matching — saving the agent
     # from exact-match failures on minor formatting mismatches.
-    from tools.fuzzy_match import fuzzy_find_and_replace
+    from icecode_tools.fuzzy_match import fuzzy_find_and_replace
 
     new_content, match_count, _strategy, match_error = fuzzy_find_and_replace(
         content, old_string, new_string, replace_all
@@ -517,7 +517,7 @@ def _patch_skill(
         preview = content[:500] + ("..." if len(content) > 500 else "")
         err_msg = match_error
         try:
-            from tools.fuzzy_match import format_no_match_hint
+            from icecode_tools.fuzzy_match import format_no_match_hint
             err_msg += format_no_match_hint(match_error, match_count, old_string, content)
         except Exception:
             pass
@@ -778,8 +778,8 @@ def skill_manage(
         # user-directed, and those skills belong to the user (the curator must
         # not touch them). Best-effort; telemetry failures never break the tool.
         try:
-            from tools.skill_usage import bump_patch, forget, mark_agent_created
-            from tools.skill_provenance import is_background_review
+            from icecode_tools.skill_usage import bump_patch, forget, mark_agent_created
+            from icecode_tools.skill_provenance import is_background_review
             if action == "create":
                 if is_background_review():
                     mark_agent_created(name)
@@ -913,7 +913,7 @@ SKILL_MANAGE_SCHEMA = {
 
 
 # --- Registry ---
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 registry.register(
     name="skill_manage",

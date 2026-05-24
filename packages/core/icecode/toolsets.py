@@ -550,7 +550,7 @@ def get_toolset(name: str) -> Optional[Dict[str, Any]]:
     toolset = TOOLSETS.get(name)
 
     try:
-        from tools.registry import registry
+        from icecode_tools.registry import registry
     except Exception:
         return toolset if toolset else None
 
@@ -635,7 +635,7 @@ def resolve_toolset(name: str, visited: Set[str] = None) -> List[str]:
                 if platform_registry.is_registered(platform_name):
                     plugin_tools = set(_ICECODE_CORE_TOOLS)
                     try:
-                        from tools.registry import registry
+                        from icecode_tools.registry import registry
                         plugin_tools.update(
                             e.name for e in registry._tools.values()
                             if e.toolset == platform_name
@@ -687,7 +687,7 @@ def _get_plugin_toolset_names() -> Set[str]:
     ``TOOLSETS`` dict — i.e. they were added by plugins at load time.
     """
     try:
-        from tools.registry import registry
+        from icecode_tools.registry import registry
         return {
             toolset_name
             for toolset_name in registry.get_registered_toolset_names()
@@ -700,7 +700,7 @@ def _get_plugin_toolset_names() -> Set[str]:
 def _get_registry_toolset_aliases() -> Dict[str, str]:
     """Return explicit toolset aliases registered in the live registry."""
     try:
-        from tools.registry import registry
+        from icecode_tools.registry import registry
         return registry.get_registered_toolset_aliases()
     except Exception:
         return {}

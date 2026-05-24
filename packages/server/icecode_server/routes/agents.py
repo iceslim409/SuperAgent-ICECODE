@@ -481,7 +481,7 @@ async def create_agent(req: AgentCreate):
         "mode": req.mode,
         "enable_computer": req.enable_computer,
         "source": "user",
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now().isoformat(),
     }
     agents.append(agent)
     _save_agents(agents)

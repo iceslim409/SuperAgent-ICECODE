@@ -34,7 +34,7 @@ class _ReviewRuntimeBinding(NamedTuple):
 
 def _render_candidate_list() -> str:
     """Human/agent-readable list of agent-created skills with usage stats."""
-    from tools import skill_usage
+    from icecode_tools import skill_usage
     rows = skill_usage.agent_created_report()
     if not rows:
         return "No agent-created skills to review."
@@ -249,7 +249,7 @@ def run_curator_review(
     gets written and ``state.last_report_path`` still records it so users
     can read what the curator WOULD have done.
     """
-    from tools import skill_usage
+    from icecode_tools import skill_usage
     start = datetime.now(timezone.utc)
     if dry_run:
         try:

@@ -82,7 +82,7 @@ def apply_automatic_transitions(now: Optional[datetime] = None) -> Dict[str, int
     """Walk every agent-created skill and move active/stale/archived based on
     the latest real activity timestamp. Pinned skills are never touched.
     Returns a counter dict describing what changed."""
-    from tools import skill_usage as _u
+    from icecode_tools import skill_usage as _u
 
     if now is None:
         now = datetime.now(timezone.utc)

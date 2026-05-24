@@ -60,7 +60,7 @@ def _load_skill_payload(skill_identifier: str, task_id: str | None = None) -> tu
         return None
 
     try:
-        from tools.skills_tool import SKILLS_DIR, skill_view
+        from icecode_tools.skills_tool import SKILLS_DIR, skill_view
 
         identifier_path = Path(raw_identifier).expanduser()
         if identifier_path.is_absolute():
@@ -147,7 +147,7 @@ def _build_skill_message(
     session_id: str | None = None,
 ) -> str:
     """Format a loaded skill into a user/system message payload."""
-    from tools.skills_tool import SKILLS_DIR
+    from icecode_tools.skills_tool import SKILLS_DIR
 
     content = str(loaded_skill.get("content") or "")
 
@@ -251,7 +251,7 @@ def scan_skill_commands() -> Dict[str, Dict[str, Any]]:
     _skill_commands_platform = _resolve_skill_commands_platform()
     _skill_commands = {}
     try:
-        from tools.skills_tool import SKILLS_DIR, _parse_frontmatter, skill_matches_platform, _get_disabled_skill_names
+        from icecode_tools.skills_tool import SKILLS_DIR, _parse_frontmatter, skill_matches_platform, _get_disabled_skill_names
         from agent.skill_utils import get_external_skills_dirs, iter_skill_index_files
         disabled = _get_disabled_skill_names()
         seen_names: set = set()
@@ -434,7 +434,7 @@ def build_skill_invocation_message(
 
     # Track active usage for Curator lifecycle management (#17782)
     try:
-        from tools.skill_usage import bump_use
+        from icecode_tools.skill_usage import bump_use
         bump_use(skill_name)
     except Exception:
         pass  # Non-critical — skill invocation proceeds regardless
@@ -481,7 +481,7 @@ def build_preloaded_skills_prompt(
 
         # Track active usage for Curator lifecycle management (#17782)
         try:
-            from tools.skill_usage import bump_use
+            from icecode_tools.skill_usage import bump_use
             bump_use(skill_name)
         except Exception:
             pass  # Non-critical

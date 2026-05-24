@@ -298,7 +298,7 @@ def _resolve_single_delivery_target(job: dict, deliver_value: str) -> Optional[d
         platform_name, rest = deliver_value.split(":", 1)
         platform_key = platform_name.lower()
 
-        from tools.send_message_tool import _parse_target_ref
+        from icecode_tools.send_message_tool import _parse_target_ref
 
         parsed_chat_id, parsed_thread_id, is_explicit = _parse_target_ref(platform_key, rest)
         if is_explicit:
@@ -504,7 +504,7 @@ def _deliver_result(job: dict, content: str, adapters=None, loop=None) -> Option
             return msg
         return None  # local-only jobs don't deliver — not a failure
 
-    from tools.send_message_tool import _send_to_platform
+    from icecode_tools.send_message_tool import _send_to_platform
     from gateway.config import load_gateway_config, Platform
 
     # Optionally wrap the content with a header/footer so the user knows this
@@ -947,8 +947,8 @@ def _build_job_prompt(job: dict, prerun_script: Optional[tuple] = None) -> str:
     if not skill_names:
         return _scan_assembled_cron_prompt(prompt, job)
 
-    from tools.skills_tool import skill_view
-    from tools.skill_usage import bump_use
+    from icecode_tools.skills_tool import skill_view
+    from icecode_tools.skill_usage import bump_use
 
     parts = []
     skipped: list[str] = []
@@ -1002,7 +1002,7 @@ def _scan_assembled_cron_prompt(assembled: str, job: dict) -> str:
     (auto-approves tool calls), a malicious skill carrying an injection
     payload bypassed every gate.
     """
-    from tools.cronjob_tools import _scan_cron_prompt
+    from icecode_tools.cronjob_tools import _scan_cron_prompt
 
     scan_error = _scan_cron_prompt(assembled)
     if scan_error:
@@ -1416,7 +1416,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         # register_mcp_servers(). Non-fatal on failure: a broken MCP server
         # shouldn't kill an otherwise-working cron job. See #4219.
         try:
-            from tools.mcp_tool import discover_mcp_tools
+            from icecode_tools.mcp_tool import discover_mcp_tools
             _mcp_tools = discover_mcp_tools()
             if _mcp_tools:
                 logger.info(
@@ -1805,7 +1805,7 @@ def tick(verbose: bool = True, adapters=None, loop=None) -> int:
         # never touched — only PIDs explicitly detected as orphans in
         # tools.mcp_tool._run_stdio's finally block are reaped.
         try:
-            from tools.mcp_tool import _kill_orphaned_mcp_children
+            from icecode_tools.mcp_tool import _kill_orphaned_mcp_children
             _kill_orphaned_mcp_children()
         except Exception as _e:
             logger.debug("Post-tick MCP orphan cleanup failed: %s", _e)

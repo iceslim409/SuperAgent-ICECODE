@@ -1903,7 +1903,7 @@ class _SessionMixin:
 
         # 1. Kill background processes for this task
         try:
-            from tools.process_registry import process_registry
+            from icecode_tools.process_registry import process_registry
             process_registry.kill_all(task_id=task_id)
         except Exception:
             pass
@@ -2465,7 +2465,7 @@ class _SessionMixin:
 
         Returns the original list if no truncation was needed.
         """
-        from tools.delegate_tool import _get_max_concurrent_children
+        from icecode_tools.delegate_tool import _get_max_concurrent_children
         max_children = _get_max_concurrent_children()
         delegate_count = sum(1 for tc in tool_calls if tc.function.name == "delegate_task")
         if delegate_count <= max_children:

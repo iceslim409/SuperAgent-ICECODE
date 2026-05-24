@@ -182,7 +182,7 @@ class _ConversationMixin:
         # a foreground user-directed turn. Set at the top of each call;
         # the review fork runs on its own thread with a fresh context,
         # so the foreground value here does not leak into it.
-        from tools.skill_provenance import set_current_write_origin
+        from icecode_tools.skill_provenance import set_current_write_origin
         set_current_write_origin(getattr(self, "_memory_write_origin", "assistant_tool"))
 
         # If the previous turn activated fallback, restore the primary
@@ -2079,7 +2079,7 @@ class _ConversationMixin:
                     ):
                         llama_cpp_grammar_retry_attempted = True
                         try:
-                            from tools.schema_sanitizer import strip_pattern_and_format
+                            from icecode_tools.schema_sanitizer import strip_pattern_and_format
                             _, _stripped = strip_pattern_and_format(self.tools)
                         except Exception as _strip_exc:  # pragma: no cover — defensive
                             logging.warning(
@@ -4020,7 +4020,7 @@ class _ConversationMixin:
             # CLI thread has installed one. Gateway / cron contexts get the
             # codex-side fail-closed default.
             try:
-                from tools.terminal_tool import _get_approval_callback
+                from icecode_tools.terminal_tool import _get_approval_callback
                 approval_callback = _get_approval_callback()
             except Exception:
                 approval_callback = None

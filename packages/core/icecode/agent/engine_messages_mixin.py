@@ -148,7 +148,7 @@ class _MessagesMixin:
 
         description = ""
         try:
-            from tools.vision_tools import vision_analyze_tool
+            from icecode_tools.vision_tools import vision_analyze_tool
 
             result_json = asyncio.run(
                 vision_analyze_tool(image_url=vision_source, user_prompt=analysis_prompt)
@@ -340,7 +340,7 @@ class _MessagesMixin:
             return False
 
         try:
-            from tools.vision_tools import _resize_image_for_vision
+            from icecode_tools.vision_tools import _resize_image_for_vision
         except Exception as exc:
             logger.warning("image-shrink recovery: vision_tools unavailable — %s", exc)
             return False
@@ -1508,7 +1508,7 @@ class _MessagesMixin:
         # read content is summarised away — if the model re-reads the same
         # file it needs the full content, not a "file unchanged" stub.
         try:
-            from tools.file_tools import reset_file_dedup
+            from icecode_tools.file_tools import reset_file_dedup
             reset_file_dedup(task_id)
         except Exception:
             pass

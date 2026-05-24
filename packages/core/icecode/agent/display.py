@@ -315,7 +315,7 @@ def _resolve_skill_manage_paths(args: dict) -> list[Path]:
     if not action or not name:
         return []
 
-    from tools.skill_manager_tool import _find_skill, _resolve_skill_dir
+    from icecode_tools.skill_manager_tool import _find_skill, _resolve_skill_dir
 
     if action == "create":
         skill_dir = _resolve_skill_dir(name, args.get("category"))

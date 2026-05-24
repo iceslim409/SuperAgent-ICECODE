@@ -746,7 +746,7 @@ class _CodexCompletionsAdapter:
                 timed_out.set()
                 raise TimeoutError(_timeout_message())
             try:
-                from tools.interrupt import is_interrupted
+                from icecode_tools.interrupt import is_interrupted
                 if is_interrupted():
                     raise InterruptedError("Codex auxiliary Responses stream interrupted")
             except InterruptedError:

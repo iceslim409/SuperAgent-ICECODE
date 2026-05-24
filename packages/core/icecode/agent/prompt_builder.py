@@ -669,8 +669,8 @@ def _probe_remote_backend(env_type: str) -> str | None:
     try:
         # Import locally: tools/ imports are heavy and only relevant when a
         # non-local backend is actually configured.
-        from tools.terminal_tool import _get_env_config  # type: ignore
-        from tools.environments import get_environment  # type: ignore
+        from icecode_tools.terminal_tool import _get_env_config  # type: ignore
+        from icecode_tools.environments import get_environment  # type: ignore
     except Exception as e:
         logger.debug("Backend probe unavailable (import failed): %s", e)
         _BACKEND_PROBE_CACHE[cache_key] = ""
@@ -1223,7 +1223,7 @@ def build_nous_subscription_prompt(valid_tool_names: "set[str] | None" = None) -
     """Build a compact Nous subscription capability block for the system prompt."""
     try:
         from icecode_cli.hermes_cli.nous_subscription import get_nous_subscription_features
-        from tools.tool_backend_helpers import managed_nous_tools_enabled
+        from icecode_tools.tool_backend_helpers import managed_nous_tools_enabled
     except Exception as exc:
         logger.debug("Failed to import Nous subscription helper: %s", exc)
         return ""

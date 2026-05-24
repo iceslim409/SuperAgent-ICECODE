@@ -45,7 +45,7 @@ try:
 except (ImportError, ModuleNotFoundError):
     from icecode.agent.memory_provider import MemoryProvider
 from icecode.icecode_constants import get_hermes_home
-from tools.registry import tool_error
+from icecode_tools.registry import tool_error
 from icecode_cli.hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
@@ -879,7 +879,7 @@ class HindsightMemoryProvider(MemoryProvider):
                         + (f": {reason}" if reason else "")
                     )
                 try:
-                    from tools.lazy_deps import ensure as _lazy_ensure
+                    from icecode_tools.lazy_deps import ensure as _lazy_ensure
                     _lazy_ensure("memory.hindsight", prompt=False)
                 except ImportError:
                     pass

@@ -165,16 +165,16 @@ try:
         handle_function_call,
         check_toolset_requirements,
     )
-    from tools.terminal_tool import cleanup_vm, get_active_env, is_persistent_env
-    from tools.terminal_tool import (
+    from icecode_tools.terminal_tool import cleanup_vm, get_active_env, is_persistent_env
+    from icecode_tools.terminal_tool import (
         set_approval_callback as _set_approval_callback,
         set_sudo_password_callback as _set_sudo_password_callback,
         _get_approval_callback,
         _get_sudo_password_callback,
     )
-    from tools.tool_result_storage import maybe_persist_tool_result, enforce_turn_budget
-    from tools.interrupt import set_interrupt as _set_interrupt
-    from tools.browser_tool import cleanup_browser
+    from icecode_tools.tool_result_storage import maybe_persist_tool_result, enforce_turn_budget
+    from icecode_tools.interrupt import set_interrupt as _set_interrupt
+    from icecode_tools.browser_tool import cleanup_browser
     from icecode.agent.memory_manager import StreamingContextScrubber, build_memory_context_block, sanitize_context
     from icecode.agent.think_scrubber import StreamingThinkScrubber
     from icecode.agent.retry_utils import jittered_backoff
@@ -1326,7 +1326,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
         self._cached_system_prompt: Optional[str] = None
         
         # Filesystem checkpoint manager (transparent — not a tool)
-        from tools.checkpoint_manager import CheckpointManager
+        from icecode_tools.checkpoint_manager import CheckpointManager
         self._checkpoint_mgr = CheckpointManager(
             enabled=checkpoints_enabled,
             max_snapshots=checkpoint_max_snapshots,
@@ -1346,7 +1346,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
         }
         
         # In-memory todo list for task planning (one per agent/session)
-        from tools.todo_tool import TodoStore
+        from icecode_tools.todo_tool import TodoStore
         self._todo_store = TodoStore()
         
         # Load config once for memory, skills, and compression sections
@@ -1382,7 +1382,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
                 self._user_profile_enabled = mem_config.get("user_profile_enabled", False)
                 self._memory_nudge_interval = int(mem_config.get("nudge_interval", 10))
                 if self._memory_enabled or self._user_profile_enabled:
-                    from tools.memory_tool import MemoryStore
+                    from icecode_tools.memory_tool import MemoryStore
                     self._memory_store = MemoryStore(
                         memory_char_limit=mem_config.get("memory_char_limit", 2200),
                         user_char_limit=mem_config.get("user_char_limit", 1375),

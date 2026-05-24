@@ -673,7 +673,7 @@ class HermesACPAgent(acp.Agent):
             return
 
         try:
-            from tools.mcp_tool import register_mcp_servers
+            from icecode_tools.mcp_tool import register_mcp_servers
 
             config_map: dict[str, dict] = {}
             for server in mcp_servers:
@@ -1236,7 +1236,7 @@ class HermesACPAgent(acp.Agent):
                 logger.debug("Could not set ACP session context", exc_info=True)
             if approval_cb:
                 try:
-                    from tools import terminal_tool as _terminal_tool
+                    from icecode_tools import terminal_tool as _terminal_tool
                     previous_approval_cb = _terminal_tool._get_approval_callback()
                     _terminal_tool.set_approval_callback(approval_cb)
                 except Exception:
@@ -1264,7 +1264,7 @@ class HermesACPAgent(acp.Agent):
                     os.environ["ICECODE_INTERACTIVE"] = previous_interactive
                 if approval_cb:
                     try:
-                        from tools import terminal_tool as _terminal_tool
+                        from icecode_tools import terminal_tool as _terminal_tool
                         _terminal_tool.set_approval_callback(previous_approval_cb)
                     except Exception:
                         logger.debug("Could not restore approval callback", exc_info=True)

@@ -38,7 +38,7 @@ def _resolve_short_name(name: str, sources, console: Console) -> str:
     matches exist, shows them and asks the user to use the full identifier.
     Returns empty string if nothing found or ambiguous.
     """
-    from tools.skills_hub import unified_search
+    from icecode_tools.skills_hub import unified_search
 
     c = console or _console
     c.print(f"[dim]Resolving '{name}'...[/]")
@@ -167,7 +167,7 @@ def _existing_categories() -> List[str]:
     Used to suggest reusable categories when interactively installing from a
     URL. Hidden dirs (``.hub``, ``.trash``) are skipped.
     """
-    from tools.skills_hub import SKILLS_DIR
+    from icecode_tools.skills_hub import SKILLS_DIR
     out: List[str] = []
     try:
         for entry in SKILLS_DIR.iterdir():
@@ -242,7 +242,7 @@ def _prompt_for_category(c: Console, existing: List[str]) -> str:
 def do_search(query: str, source: str = "all", limit: int = 10,
               console: Optional[Console] = None) -> None:
     """Search registries and display results as a Rich table."""
-    from tools.skills_hub import GitHubAuth, create_source_router, unified_search
+    from icecode_tools.skills_hub import GitHubAuth, create_source_router, unified_search
 
     c = console or _console
     c.print(f"\n[bold]Searching for:[/] {query}")
@@ -285,7 +285,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
 
     Official skills are always shown first, regardless of source filter.
     """
-    from tools.skills_hub import (
+    from icecode_tools.skills_hub import (
         GitHubAuth, create_source_router, parallel_search_sources,
     )
 
@@ -418,11 +418,11 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     (so pair it with ``name_override`` when installing from a URL that has
     no frontmatter).
     """
-    from tools.skills_hub import (
+    from icecode_tools.skills_hub import (
         GitHubAuth, create_source_router, ensure_hub_dirs,
         quarantine_bundle, install_from_quarantine, HubLockFile,
     )
-    from tools.skills_guard import scan_skill, should_allow_install, format_scan_report
+    from icecode_tools.skills_guard import scan_skill, should_allow_install, format_scan_report
 
     c = console or _console
     ensure_hub_dirs()
@@ -536,7 +536,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         q_path = quarantine_bundle(bundle)
     except ValueError as exc:
         c.print(f"[bold red]Installation blocked:[/] {exc}\n")
-        from tools.skills_hub import append_audit_log
+        from icecode_tools.skills_hub import append_audit_log
         append_audit_log("BLOCKED", bundle.name, bundle.source,
                          bundle.trust_level, "invalid_path", str(exc))
         return
@@ -554,7 +554,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         c.print(f"\n[bold red]Installation blocked:[/] {reason}")
         # Clean up quarantine
         shutil.rmtree(q_path, ignore_errors=True)
-        from tools.skills_hub import append_audit_log
+        from icecode_tools.skills_hub import append_audit_log
         append_audit_log("BLOCKED", bundle.name, bundle.source,
                          bundle.trust_level, result.verdict,
                          f"{len(result.findings)}_findings")
@@ -604,11 +604,11 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     except ValueError as exc:
         c.print(f"[bold red]Installation blocked:[/] {exc}\n")
         shutil.rmtree(q_path, ignore_errors=True)
-        from tools.skills_hub import append_audit_log
+        from icecode_tools.skills_hub import append_audit_log
         append_audit_log("BLOCKED", bundle.name, bundle.source,
                          bundle.trust_level, "invalid_path", str(exc))
         return
-    from tools.skills_hub import SKILLS_DIR
+    from icecode_tools.skills_hub import SKILLS_DIR
     c.print(f"[bold green]Installed:[/] {install_dir.relative_to(SKILLS_DIR)}")
     c.print(f"[dim]Files: {', '.join(bundle.files.keys())}[/]\n")
 
@@ -626,7 +626,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
 
 def do_inspect(identifier: str, console: Optional[Console] = None) -> None:
     """Preview a skill's SKILL.md content without installing."""
-    from tools.skills_hub import GitHubAuth, create_source_router
+    from icecode_tools.skills_hub import GitHubAuth, create_source_router
 
     c = console or _console
     auth = GitHubAuth()
@@ -679,7 +679,7 @@ def browse_skills(page: int = 1, page_size: int = 20, source: str = "all") -> di
 
     Returns ``{"items": [...], "page": int, "total_pages": int, "total": int}``.
     """
-    from tools.skills_hub import GitHubAuth, create_source_router
+    from icecode_tools.skills_hub import GitHubAuth, create_source_router
 
     page_size = max(1, min(page_size, 100))
     _TRUST_RANK = {"builtin": 3, "trusted": 2, "community": 1}
@@ -722,7 +722,7 @@ def browse_skills(page: int = 1, page_size: int = 20, source: str = "all") -> di
 
 def inspect_skill(identifier: str) -> Optional[dict]:
     """Skill metadata (+ SKILL.md preview) for programmatic callers."""
-    from tools.skills_hub import GitHubAuth, create_source_router
+    from icecode_tools.skills_hub import GitHubAuth, create_source_router
 
     class _Q:
         def print(self, *a, **k):
@@ -772,9 +772,9 @@ def do_list(source_filter: str = "all",
     ``skills.disabled`` list because ``-p`` swaps ``ICECODE_HOME`` at process
     start.  No explicit profile flag needed here.
     """
-    from tools.skills_hub import HubLockFile, ensure_hub_dirs
-    from tools.skills_sync import _read_manifest
-    from tools.skills_tool import _find_all_skills
+    from icecode_tools.skills_hub import HubLockFile, ensure_hub_dirs
+    from icecode_tools.skills_sync import _read_manifest
+    from icecode_tools.skills_tool import _find_all_skills
     from agent.skill_utils import get_disabled_skill_names
 
     c = console or _console
@@ -859,7 +859,7 @@ def do_list(source_filter: str = "all",
 
 def do_check(name: Optional[str] = None, console: Optional[Console] = None) -> None:
     """Check hub-installed skills for upstream updates."""
-    from tools.skills_hub import check_for_skill_updates
+    from icecode_tools.skills_hub import check_for_skill_updates
 
     c = console or _console
     results = check_for_skill_updates(name=name)
@@ -882,7 +882,7 @@ def do_check(name: Optional[str] = None, console: Optional[Console] = None) -> N
 
 def do_update(name: Optional[str] = None, console: Optional[Console] = None) -> None:
     """Update hub-installed skills with upstream changes."""
-    from tools.skills_hub import HubLockFile, check_for_skill_updates
+    from icecode_tools.skills_hub import HubLockFile, check_for_skill_updates
 
     c = console or _console
     lock = HubLockFile()
@@ -902,8 +902,8 @@ def do_update(name: Optional[str] = None, console: Optional[Console] = None) -> 
 
 def do_audit(name: Optional[str] = None, console: Optional[Console] = None) -> None:
     """Re-run security scan on installed hub skills."""
-    from tools.skills_hub import HubLockFile, SKILLS_DIR
-    from tools.skills_guard import scan_skill, format_scan_report
+    from icecode_tools.skills_hub import HubLockFile, SKILLS_DIR
+    from icecode_tools.skills_guard import scan_skill, format_scan_report
 
     c = console or _console
     lock = HubLockFile()
@@ -937,7 +937,7 @@ def do_uninstall(name: str, console: Optional[Console] = None,
                  skip_confirm: bool = False,
                  invalidate_cache: bool = True) -> None:
     """Remove a hub-installed skill with confirmation."""
-    from tools.skills_hub import uninstall_skill
+    from icecode_tools.skills_hub import uninstall_skill
 
     c = console or _console
 
@@ -973,7 +973,7 @@ def do_reset(name: str, restore: bool = False,
              skip_confirm: bool = False,
              invalidate_cache: bool = True) -> None:
     """Reset a bundled skill's manifest tracking (+ optionally restore from bundled)."""
-    from tools.skills_sync import reset_bundled_skill
+    from icecode_tools.skills_sync import reset_bundled_skill
 
     c = console or _console
 
@@ -1015,7 +1015,7 @@ def do_reset(name: str, restore: bool = False,
 
 def do_tap(action: str, repo: str = "", console: Optional[Console] = None) -> None:
     """Manage taps (custom GitHub repo sources)."""
-    from tools.skills_hub import TapsManager
+    from icecode_tools.skills_hub import TapsManager
 
     c = console or _console
     mgr = TapsManager()
@@ -1059,8 +1059,8 @@ def do_tap(action: str, repo: str = "", console: Optional[Console] = None) -> No
 def do_publish(skill_path: str, target: str = "github", repo: str = "",
                console: Optional[Console] = None) -> None:
     """Publish a local skill to a registry (GitHub PR or ClawHub submission)."""
-    from tools.skills_hub import GitHubAuth, SKILLS_DIR
-    from tools.skills_guard import scan_skill, format_scan_report
+    from icecode_tools.skills_hub import GitHubAuth, SKILLS_DIR
+    from icecode_tools.skills_guard import scan_skill, format_scan_report
 
     c = console or _console
     path = Path(skill_path)
@@ -1224,7 +1224,7 @@ def _github_publish(skill_path: Path, skill_name: str, target_repo: str,
 
 def do_snapshot_export(output_path: str, console: Optional[Console] = None) -> None:
     """Export current hub skill configuration to a portable JSON file."""
-    from tools.skills_hub import HubLockFile, TapsManager
+    from icecode_tools.skills_hub import HubLockFile, TapsManager
 
     c = console or _console
     lock = HubLockFile()
@@ -1265,7 +1265,7 @@ def do_snapshot_export(output_path: str, console: Optional[Console] = None) -> N
 def do_snapshot_import(input_path: str, force: bool = False,
                        console: Optional[Console] = None) -> None:
     """Re-install skills from a snapshot file."""
-    from tools.skills_hub import TapsManager
+    from icecode_tools.skills_hub import TapsManager
 
     c = console or _console
     inp = Path(input_path)

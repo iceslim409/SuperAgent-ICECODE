@@ -33,16 +33,16 @@ try:
         _detect_tool_failure,
         get_tool_emoji as _get_tool_emoji,
     )
-    from tools import handle_function_call
-    from tools.terminal_tool import (
+    from icecode_tools import handle_function_call
+    from icecode_tools.terminal_tool import (
         get_active_env,
         set_approval_callback as _set_approval_callback,
         set_sudo_password_callback as _set_sudo_password_callback,
         _get_approval_callback,
         _get_sudo_password_callback,
     )
-    from tools.tool_result_storage import maybe_persist_tool_result, enforce_turn_budget
-    from tools.interrupt import set_interrupt as _set_interrupt
+    from icecode_tools.tool_result_storage import maybe_persist_tool_result, enforce_turn_budget
+    from icecode_tools.interrupt import set_interrupt as _set_interrupt
 except (ImportError, AttributeError):
     # Minimal stubs so the module is importable without the full runtime.
     class KawaiiSpinner:  # type: ignore[no-redef]
@@ -138,7 +138,7 @@ class _ToolExecutionMixin:
             return json.dumps({"error": block_message}, ensure_ascii=False)
 
         if function_name == "todo":
-            from tools.todo_tool import todo_tool as _todo_tool
+            from icecode_tools.todo_tool import todo_tool as _todo_tool
             return _todo_tool(
                 todos=function_args.get("todos"),
                 merge=function_args.get("merge", False),
@@ -149,7 +149,7 @@ class _ToolExecutionMixin:
             if not session_db:
                 from icecode.icecode_state import format_session_db_unavailable
                 return json.dumps({"success": False, "error": format_session_db_unavailable()})
-            from tools.session_search_tool import session_search as _session_search
+            from icecode_tools.session_search_tool import session_search as _session_search
             return _session_search(
                 query=function_args.get("query", ""),
                 role_filter=function_args.get("role_filter"),
@@ -159,7 +159,7 @@ class _ToolExecutionMixin:
             )
         elif function_name == "memory":
             target = function_args.get("target", "memory")
-            from tools.memory_tool import memory_tool as _memory_tool
+            from icecode_tools.memory_tool import memory_tool as _memory_tool
             result = _memory_tool(
                 action=function_args.get("action"),
                 target=target,
@@ -382,7 +382,7 @@ class _ToolExecutionMixin:
             # The callback is thread-local; the main thread's callback
             # is invisible to worker threads.
             try:
-                from tools.environments.base import set_activity_callback
+                from icecode_tools.environments.base import set_activity_callback
                 set_activity_callback(self._touch_activity)
             except Exception:
                 pass
@@ -716,7 +716,7 @@ class _ToolExecutionMixin:
             # the agent while a command is running.
             if not _execution_blocked:
                 try:
-                    from tools.environments.base import set_activity_callback
+                    from icecode_tools.environments.base import set_activity_callback
                     set_activity_callback(self._touch_activity)
                 except Exception:
                     pass
@@ -770,7 +770,7 @@ class _ToolExecutionMixin:
                 function_result = self._guardrail_block_result(_guardrail_block_decision)
                 tool_duration = 0.0
             elif function_name == "todo":
-                from tools.todo_tool import todo_tool as _todo_tool
+                from icecode_tools.todo_tool import todo_tool as _todo_tool
                 function_result = _todo_tool(
                     todos=function_args.get("todos"),
                     merge=function_args.get("merge", False),
@@ -785,7 +785,7 @@ class _ToolExecutionMixin:
                     from icecode.icecode_state import format_session_db_unavailable
                     function_result = json.dumps({"success": False, "error": format_session_db_unavailable()})
                 else:
-                    from tools.session_search_tool import session_search as _session_search
+                    from icecode_tools.session_search_tool import session_search as _session_search
                     function_result = _session_search(
                         query=function_args.get("query", ""),
                         role_filter=function_args.get("role_filter"),
@@ -798,7 +798,7 @@ class _ToolExecutionMixin:
                     self._vprint(f"  {_get_cute_tool_message_impl('session_search', function_args, tool_duration, result=function_result)}")
             elif function_name == "memory":
                 target = function_args.get("target", "memory")
-                from tools.memory_tool import memory_tool as _memory_tool
+                from icecode_tools.memory_tool import memory_tool as _memory_tool
                 function_result = _memory_tool(
                     action=function_args.get("action"),
                     target=target,

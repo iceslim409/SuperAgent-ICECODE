@@ -138,15 +138,15 @@ def create_environment(
         Environment instance with execute() and cleanup() methods
     """
     if env_type == "local":
-        from tools.environments.local import LocalEnvironment
+        from icecode_tools.environments.local import LocalEnvironment
         return LocalEnvironment(cwd=cwd, timeout=timeout)
     
     elif env_type == "docker":
-        from tools.environments.docker import DockerEnvironment
+        from icecode_tools.environments.docker import DockerEnvironment
         return DockerEnvironment(image=image, cwd=cwd, timeout=timeout, **kwargs)
     
     elif env_type == "modal":
-        from tools.environments.modal import ModalEnvironment
+        from icecode_tools.environments.modal import ModalEnvironment
         return ModalEnvironment(image=image, cwd=cwd, timeout=timeout, **kwargs)
     
     else:

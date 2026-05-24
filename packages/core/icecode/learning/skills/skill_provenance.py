@@ -14,7 +14,7 @@ _spawn_background_review in run_agent.py) and defaults to "assistant_tool"
 for normal (foreground) agents.
 
 Usage:
-    from tools.skill_provenance import (
+    from icecode_tools.skill_provenance import (
         set_current_write_origin,
         reset_current_write_origin,
         get_current_write_origin,
