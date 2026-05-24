@@ -12,11 +12,11 @@ import shlex
 import threading
 from pathlib import Path
 
-from tools.environments.base import (
+from icecode_tools.environments.base import (
     BaseEnvironment,
     _ThreadedProcessHandle,
 )
-from tools.environments.file_sync import (
+from icecode_tools.environments.file_sync import (
     FileSyncManager,
     iter_sync_files,
     quoted_mkdir_command,

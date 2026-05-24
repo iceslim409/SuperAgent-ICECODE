@@ -12,7 +12,7 @@ from typing import Callable, Optional
 logger = logging.getLogger(__name__)
 
 from icecode.icecode_constants import get_hermes_home
-from tools.tool_backend_helpers import managed_nous_tools_enabled
+from icecode_tools.tool_backend_helpers import managed_nous_tools_enabled
 
 _DEFAULT_TOOL_GATEWAY_DOMAIN = "nousresearch.com"
 _DEFAULT_TOOL_GATEWAY_SCHEME = "https"

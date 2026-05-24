@@ -40,7 +40,7 @@ import sys
 import threading
 from typing import Any, Dict, List, Optional, Tuple
 
-from tools.computer_use.backend import (
+from icecode_tools.computer_use.backend import (
     ActionResult,
     CaptureResult,
     ComputerUseBackend,

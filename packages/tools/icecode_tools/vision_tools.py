@@ -39,8 +39,8 @@ from urllib.parse import urlparse
 import httpx
 from agent.auxiliary_client import async_call_llm, extract_content_or_reasoning
 from icecode.icecode_constants import get_hermes_dir
-from tools.debug_helpers import DebugSession
-from tools.website_policy import check_website_access
+from icecode_tools.debug_helpers import DebugSession
+from icecode_tools.website_policy import check_website_access
 import sys
 
 logger = logging.getLogger(__name__)

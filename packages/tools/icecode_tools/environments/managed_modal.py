@@ -10,12 +10,12 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from tools.environments.modal_utils import (
+from icecode_tools.environments.modal_utils import (
     BaseModalExecutionEnvironment,
     ModalExecStart,
     PreparedModalExec,
 )
-from tools.managed_tool_gateway import resolve_managed_tool_gateway
+from icecode_tools.managed_tool_gateway import resolve_managed_tool_gateway
 
 logger = logging.getLogger(__name__)
 

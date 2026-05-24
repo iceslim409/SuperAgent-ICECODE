@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 # The terminal tool polls this during command execution so it can kill
 # long-running subprocesses immediately instead of blocking until timeout.
 # ---------------------------------------------------------------------------
-from tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 — re-exported
+from icecode_tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 — re-exported
 # display_hermes_home imported lazily at call site (stale-module safety during hermes update)
 
 
@@ -66,8 +66,8 @@ from tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 — r
 # =============================================================================
 
 # Singularity helpers (scratch dir, SIF cache) now live in tools/environments/singularity.py
-from tools.environments.singularity import _get_scratch_dir
-from tools.tool_backend_helpers import (
+from icecode_tools.environments.singularity import _get_scratch_dir
+from icecode_tools.tool_backend_helpers import (
     coerce_modal_mode,
     has_direct_modal_credentials,
     managed_nous_tools_enabled,
@@ -314,7 +314,7 @@ def _reset_cached_sudo_passwords() -> None:
 # =============================================================================
 
 # Dangerous command detection + approval now consolidated in tools/approval.py
-from tools.approval import (
+from icecode_tools.approval import (
     check_all_command_guards as _check_all_guards_impl,
 )
 
@@ -881,13 +881,13 @@ def _transform_sudo_command(command: str | None) -> tuple[str | None, str | None
 
 
 # Environment classes now live in tools/environments/
-from tools.environments.local import LocalEnvironment as _LocalEnvironment
-from tools.environments.singularity import SingularityEnvironment as _SingularityEnvironment
-from tools.environments.ssh import SSHEnvironment as _SSHEnvironment
-from tools.environments.docker import DockerEnvironment as _DockerEnvironment
-from tools.environments.modal import ModalEnvironment as _ModalEnvironment
-from tools.environments.managed_modal import ManagedModalEnvironment as _ManagedModalEnvironment
-from tools.managed_tool_gateway import is_managed_tool_gateway_ready
+from icecode_tools.environments.local import LocalEnvironment as _LocalEnvironment
+from icecode_tools.environments.singularity import SingularityEnvironment as _SingularityEnvironment
+from icecode_tools.environments.ssh import SSHEnvironment as _SSHEnvironment
+from icecode_tools.environments.docker import DockerEnvironment as _DockerEnvironment
+from icecode_tools.environments.modal import ModalEnvironment as _ModalEnvironment
+from icecode_tools.environments.managed_modal import ManagedModalEnvironment as _ManagedModalEnvironment
+from icecode_tools.managed_tool_gateway import is_managed_tool_gateway_ready
 import sys
 
 

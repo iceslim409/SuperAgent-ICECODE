@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 from icecode.icecode_constants import get_hermes_home
-from tools.environments.base import (
+from icecode_tools.environments.base import (
     BaseEnvironment,
     _load_json_store,
     _popen_bash,

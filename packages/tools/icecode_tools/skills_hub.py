@@ -32,11 +32,11 @@ from urllib.parse import urljoin, urlparse, urlunparse
 import httpx
 import yaml
 
-from tools.skills_guard import (
+from icecode_tools.skills_guard import (
     ScanResult, content_hash, TRUSTED_REPOS,
 )
-from tools.url_safety import is_safe_url
-from tools.website_policy import check_website_access
+from icecode_tools.url_safety import is_safe_url
+from icecode_tools.website_policy import check_website_access
 
 logger = logging.getLogger(__name__)
 

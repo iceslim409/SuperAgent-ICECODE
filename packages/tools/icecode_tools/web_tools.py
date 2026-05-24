@@ -102,17 +102,17 @@ from agent.auxiliary_client import (
     extract_content_or_reasoning,
     get_async_text_auxiliary_client,
 )
-from tools.debug_helpers import DebugSession
+from icecode_tools.debug_helpers import DebugSession
 # Imported solely so unit tests can monkeypatch these names on
 # tools.web_tools (the firecrawl plugin reads them via its own import chain).
-from tools.managed_tool_gateway import (  # noqa: F401 — backward-compat names for tests
+from icecode_tools.managed_tool_gateway import (  # noqa: F401 — backward-compat names for tests
     build_vendor_gateway_url,
     read_nous_access_token as _read_nous_access_token,
     resolve_managed_tool_gateway,
 )
-from tools.tool_backend_helpers import managed_nous_tools_enabled, prefers_gateway  # noqa: F401
-from tools.url_safety import is_safe_url
-from tools.website_policy import check_website_access
+from icecode_tools.tool_backend_helpers import managed_nous_tools_enabled, prefers_gateway  # noqa: F401
+from icecode_tools.url_safety import is_safe_url
+from icecode_tools.website_policy import check_website_access
 import sys
 
 logger = logging.getLogger(__name__)

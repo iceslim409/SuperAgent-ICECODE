@@ -9,13 +9,13 @@ import threading
 from pathlib import Path
 
 from agent.file_safety import get_read_block_error
-from tools.binary_extensions import has_binary_extension
-from tools.file_operations import (
+from icecode_tools.binary_extensions import has_binary_extension
+from icecode_tools.file_operations import (
     ShellFileOperations,
     normalize_read_pagination,
     normalize_search_pagination,
 )
-from tools import file_state
+from icecode_tools import file_state
 from agent.redact import redact_sensitive_text
 
 logger = logging.getLogger(__name__)

@@ -83,11 +83,11 @@ try:
 except Exception:
     _is_safe_url = lambda url: False  # noqa: E731 — fail-closed: block all if safety module unavailable
     _is_always_blocked_url = lambda url: True  # noqa: E731 — fail-closed on the floor too
-from tools.browser_providers.base import CloudBrowserProvider
-from tools.browser_providers.browserbase import BrowserbaseProvider
-from tools.browser_providers.browser_use import BrowserUseProvider
-from tools.browser_providers.firecrawl import FirecrawlProvider
-from tools.tool_backend_helpers import normalize_browser_cloud_provider
+from icecode_tools.browser_providers.base import CloudBrowserProvider
+from icecode_tools.browser_providers.browserbase import BrowserbaseProvider
+from icecode_tools.browser_providers.browser_use import BrowserUseProvider
+from icecode_tools.browser_providers.firecrawl import FirecrawlProvider
+from icecode_tools.tool_backend_helpers import normalize_browser_cloud_provider
 
 # Camofox local anti-detection browser backend (optional).
 # When CAMOFOX_URL is set, all browser operations route through the

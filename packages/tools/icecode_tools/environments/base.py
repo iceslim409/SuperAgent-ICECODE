@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import IO, Callable, Protocol
 
 from icecode.icecode_constants import get_hermes_home
-from tools.interrupt import is_interrupted
+from icecode_tools.interrupt import is_interrupted
 
 logger = logging.getLogger(__name__)
 

@@ -64,9 +64,9 @@ def _load_fal_client() -> Any:
     return fal_client
 
 
-from tools.debug_helpers import DebugSession
-from tools.managed_tool_gateway import resolve_managed_tool_gateway
-from tools.tool_backend_helpers import (
+from icecode_tools.debug_helpers import DebugSession
+from icecode_tools.managed_tool_gateway import resolve_managed_tool_gateway
+from icecode_tools.tool_backend_helpers import (
     fal_key_is_configured,
     managed_nous_tools_enabled,
     prefers_gateway,

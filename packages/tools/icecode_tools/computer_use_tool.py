@@ -7,8 +7,8 @@ the file structure clean. This shim exists because tools.registry auto-imports
 
 from __future__ import annotations
 
-from tools.computer_use.schema import COMPUTER_USE_SCHEMA
-from tools.computer_use.tool import (
+from icecode_tools.computer_use.schema import COMPUTER_USE_SCHEMA
+from icecode_tools.computer_use.tool import (
     check_computer_use_requirements,
     handle_computer_use,
     set_approval_callback,

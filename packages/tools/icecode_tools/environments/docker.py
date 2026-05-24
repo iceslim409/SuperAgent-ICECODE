@@ -14,8 +14,8 @@ import sys
 import uuid
 from typing import Optional
 
-from tools.environments.base import BaseEnvironment, _popen_bash
-from tools.environments.local import _ICECODE_PROVIDER_ENV_BLOCKLIST
+from icecode_tools.environments.base import BaseEnvironment, _popen_bash
+from icecode_tools.environments.local import _ICECODE_PROVIDER_ENV_BLOCKLIST
 
 logger = logging.getLogger(__name__)
 

@@ -33,7 +33,7 @@ from typing import Any, Dict, Optional
 import requests
 
 from icecode_cli.hermes_cli.config import cfg_get, load_config
-from tools.browser_camofox_state import get_camofox_identity
+from icecode_tools.browser_camofox_state import get_camofox_identity
 from icecode_tools.registry import tool_error
 
 logger = logging.getLogger(__name__)

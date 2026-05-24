@@ -9,7 +9,7 @@ from typing import Any, AsyncIterator, Awaitable, Callable
 
 import httpx
 
-from tools.microsoft_graph_auth import GraphCredentials, MicrosoftGraphTokenProvider
+from icecode_tools.microsoft_graph_auth import GraphCredentials, MicrosoftGraphTokenProvider
 
 
 DEFAULT_GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0"
