@@ -24,7 +24,7 @@ import logging
 import threading
 from typing import Dict, List, Optional
 
-from agent.image_gen_provider import ImageGenProvider
+from icecode.agent.image_gen_provider import ImageGenProvider
 
 logger = logging.getLogger(__name__)
 

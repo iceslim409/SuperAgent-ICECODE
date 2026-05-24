@@ -25,7 +25,7 @@ import logging
 import threading
 from typing import Dict, List, Optional
 
-from agent.video_gen_provider import VideoGenProvider
+from icecode.agent.video_gen_provider import VideoGenProvider
 
 logger = logging.getLogger(__name__)
 

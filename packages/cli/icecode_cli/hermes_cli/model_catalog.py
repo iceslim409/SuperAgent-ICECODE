@@ -53,7 +53,10 @@ from pathlib import Path
 from typing import Any
 
 from icecode_cli.hermes_cli import __version__ as _ICECODE_VERSION
-from utils import atomic_replace
+try:
+    from utils import atomic_replace
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace
 
 logger = logging.getLogger(__name__)
 

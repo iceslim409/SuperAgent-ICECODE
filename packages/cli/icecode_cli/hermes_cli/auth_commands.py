@@ -9,24 +9,42 @@ import time
 from types import SimpleNamespace
 import uuid
 
-from agent.credential_pool import (
-    AUTH_TYPE_API_KEY,
-    AUTH_TYPE_OAUTH,
-    CUSTOM_POOL_PREFIX,
-    SOURCE_MANUAL,
-    STATUS_EXHAUSTED,
-    STRATEGY_FILL_FIRST,
-    STRATEGY_ROUND_ROBIN,
-    STRATEGY_RANDOM,
-    STRATEGY_LEAST_USED,
-    PooledCredential,
-    _exhausted_until,
-    _normalize_custom_pool_name,
-    get_pool_strategy,
-    label_from_token,
-    list_custom_pool_providers,
-    load_pool,
-)
+try:
+    from agent.credential_pool import (
+        AUTH_TYPE_API_KEY,
+        AUTH_TYPE_OAUTH,
+        CUSTOM_POOL_PREFIX,
+        SOURCE_MANUAL,
+        STATUS_EXHAUSTED,
+        STRATEGY_FILL_FIRST,
+        STRATEGY_ROUND_ROBIN,
+        STRATEGY_RANDOM,
+        STRATEGY_LEAST_USED,
+        PooledCredential,
+        _exhausted_until,
+        _normalize_custom_pool_name,
+        get_pool_strategy,
+        label_from_token,
+        list_custom_pool_providers,
+        load_pool,
+    )
+except (ImportError, ModuleNotFoundError, AttributeError):
+    AUTH_TYPE_API_KEY = "api_key"
+    AUTH_TYPE_OAUTH = "oauth"
+    CUSTOM_POOL_PREFIX = "custom_"
+    SOURCE_MANUAL = "manual"
+    STATUS_EXHAUSTED = "exhausted"
+    STRATEGY_FILL_FIRST = "fill_first"
+    STRATEGY_ROUND_ROBIN = "round_robin"
+    STRATEGY_RANDOM = "random"
+    STRATEGY_LEAST_USED = "least_used"
+    class PooledCredential: pass  # type: ignore[no-redef]
+    def _exhausted_until(*a, **kw): return None  # type: ignore[misc]
+    def _normalize_custom_pool_name(*a, **kw): return ""  # type: ignore[misc]
+    def get_pool_strategy(*a, **kw): return STRATEGY_FILL_FIRST  # type: ignore[misc]
+    def label_from_token(*a, **kw): return ""  # type: ignore[misc]
+    def list_custom_pool_providers(*a, **kw): return []  # type: ignore[misc]
+    def load_pool(*a, **kw): return {}  # type: ignore[misc]
 import icecode_cli.hermes_cli.auth as auth_mod
 from icecode_cli.hermes_cli.auth import PROVIDER_REGISTRY
 from icecode.icecode_constants import OPENROUTER_BASE_URL

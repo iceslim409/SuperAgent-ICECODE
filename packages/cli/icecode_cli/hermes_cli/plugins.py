@@ -48,7 +48,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 from icecode.icecode_constants import get_hermes_home
-from utils import env_var_enabled
+try:
+    from utils import env_var_enabled
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import env_var_enabled
 from icecode_cli.hermes_cli.config import cfg_get
 
 
@@ -501,7 +504,10 @@ class PluginContext:
             )
             return
         # Defer the import to avoid circular deps at module level
-        from agent.context_engine import ContextEngine
+        try:
+            from agent.context_engine import ContextEngine
+        except (ImportError, ModuleNotFoundError):
+            ContextEngine = object  # type: ignore[assignment,misc]
         if not isinstance(engine, ContextEngine):
             logger.warning(
                 "Plugin '%s' tried to register a context engine that does not "

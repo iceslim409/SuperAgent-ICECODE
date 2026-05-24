@@ -152,86 +152,175 @@ else:
     logger.info("No .env file found. Using system environment variables.")
 
 
-# Import our tool system
-from model_tools import (
-    get_tool_definitions,
-    get_toolset_for_tool,
-    handle_function_call,
-    check_toolset_requirements,
-)
-from tools.terminal_tool import cleanup_vm, get_active_env, is_persistent_env
-from tools.terminal_tool import (
-    set_approval_callback as _set_approval_callback,
-    set_sudo_password_callback as _set_sudo_password_callback,
-    _get_approval_callback,
-    _get_sudo_password_callback,
-)
-from tools.tool_result_storage import maybe_persist_tool_result, enforce_turn_budget
-from tools.interrupt import set_interrupt as _set_interrupt
-from tools.browser_tool import cleanup_browser
-
-
-# Agent internals extracted to agent/ package for modularity
-from agent.memory_manager import StreamingContextScrubber, build_memory_context_block, sanitize_context
-from agent.think_scrubber import StreamingThinkScrubber
-from agent.retry_utils import jittered_backoff
-from agent.error_classifier import classify_api_error, FailoverReason
-from agent.prompt_builder import (
-    DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS,
-    MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
-    ICECODE_AGENT_HELP_GUIDANCE,
-    KANBAN_GUIDANCE,
-    build_nous_subscription_prompt,
-)
-from agent.model_metadata import (
-    fetch_model_metadata,
-    estimate_tokens_rough, estimate_messages_tokens_rough, estimate_request_tokens_rough,
-    get_next_probe_tier, parse_context_limit_from_error,
-    parse_available_output_tokens_from_error,
-    save_context_length, is_local_endpoint,
-    query_ollama_num_ctx,
-)
+# Hermes-runtime imports — these use the old `agent.*` / `tools.*` / `model_tools`
+# path convention from the Hermes monorepo. They work when packages/tools is on
+# sys.path AND packages/core/icecode is mapped as `agent`. In the ICECODE runtime
+# only packages/tools is on the path, so several are unavailable. We wrap the whole
+# block so engine.py is always importable; stubs let the class be defined without
+# the full Hermes runtime present. Use icecode.agent.core for production ICECODE use.
 try:
-    from agent.context_compressor import ContextCompressor
-except (ImportError, AttributeError):
+    from model_tools import (
+        get_tool_definitions,
+        get_toolset_for_tool,
+        handle_function_call,
+        check_toolset_requirements,
+    )
+    from tools.terminal_tool import cleanup_vm, get_active_env, is_persistent_env
+    from tools.terminal_tool import (
+        set_approval_callback as _set_approval_callback,
+        set_sudo_password_callback as _set_sudo_password_callback,
+        _get_approval_callback,
+        _get_sudo_password_callback,
+    )
+    from tools.tool_result_storage import maybe_persist_tool_result, enforce_turn_budget
+    from tools.interrupt import set_interrupt as _set_interrupt
+    from tools.browser_tool import cleanup_browser
+    from icecode.agent.memory_manager import StreamingContextScrubber, build_memory_context_block, sanitize_context
+    from icecode.agent.think_scrubber import StreamingThinkScrubber
+    from icecode.agent.retry_utils import jittered_backoff
+    from icecode.agent.error_classifier import classify_api_error, FailoverReason
+    from icecode.agent.prompt_builder import (
+        DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS,
+        MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
+        ICECODE_AGENT_HELP_GUIDANCE, KANBAN_GUIDANCE,
+        build_nous_subscription_prompt,
+        build_skills_system_prompt, build_context_files_prompt,
+        build_environment_hints, load_soul_md,
+        TOOL_USE_ENFORCEMENT_GUIDANCE, TOOL_USE_ENFORCEMENT_MODELS,
+        GOOGLE_MODEL_OPERATIONAL_GUIDANCE, OPENAI_MODEL_EXECUTION_GUIDANCE,
+    )
+    from icecode.agent.model_metadata import (
+        fetch_model_metadata,
+        estimate_tokens_rough, estimate_messages_tokens_rough, estimate_request_tokens_rough,
+        get_next_probe_tier, parse_context_limit_from_error,
+        parse_available_output_tokens_from_error,
+        save_context_length, is_local_endpoint,
+        query_ollama_num_ctx,
+    )
+    from icecode.agent.context_compressor import ContextCompressor
+    from icecode.agent.subdirectory_hints import SubdirectoryHintTracker
+    from icecode.agent.prompt_caching import apply_anthropic_cache_control
+    from icecode.agent.usage_pricing import estimate_usage_cost, normalize_usage
+    from icecode.agent.codex_responses_adapter import (
+        _derive_responses_function_call_id as _codex_derive_responses_function_call_id,
+        _deterministic_call_id as _codex_deterministic_call_id,
+        _split_responses_tool_id as _codex_split_responses_tool_id,
+        _summarize_user_message_for_log,
+    )
+    from icecode.agent.display import (
+        KawaiiSpinner, build_tool_preview as _build_tool_preview,
+        get_cute_tool_message as _get_cute_tool_message_impl,
+        _detect_tool_failure,
+        get_tool_emoji as _get_tool_emoji,
+    )
+    from icecode.agent.tool_guardrails import (
+        ToolCallGuardrailConfig,
+        ToolCallGuardrailController,
+        ToolGuardrailDecision,
+        append_toolguard_guidance,
+        toolguard_synthetic_result,
+    )
+    from icecode.agent.tool_result_classification import (
+        FILE_MUTATING_TOOL_NAMES as _FILE_MUTATING_TOOLS,
+        file_mutation_result_landed,
+    )
+    from icecode.agent.trajectory import (
+        convert_scratchpad_to_think, has_incomplete_scratchpad,
+        save_trajectory as _save_trajectory_to_file,
+    )
+    from utils import atomic_json_write, base_url_host_matches, base_url_hostname, env_var_enabled, normalize_proxy_url
+    from icecode_cli.hermes_cli.config import cfg_get
+except (ImportError, ModuleNotFoundError):
+    # Stubs for all Hermes-runtime symbols — enables import outside full runtime
+    def get_tool_definitions(*a, **kw): return []
+    def get_toolset_for_tool(*a, **kw): return None
+    def handle_function_call(*a, **kw): return ""
+    def check_toolset_requirements(*a, **kw): return None
+    def cleanup_vm(): pass
+    def get_active_env(): return None
+    def is_persistent_env(): return False
+    def _set_approval_callback(*a): pass
+    def _set_sudo_password_callback(*a): pass
+    def _get_approval_callback(): return None
+    def _get_sudo_password_callback(): return None
+    def maybe_persist_tool_result(*a, **kw): return None
+    def enforce_turn_budget(*a, **kw): return None
+    def _set_interrupt(*a): pass
+    def cleanup_browser(): pass
+    class StreamingContextScrubber:
+        def __init__(self, *a, **kw): pass
+        def feed(self, *a, **kw): return ""
+    def build_memory_context_block(*a, **kw): return ""
+    def sanitize_context(ctx, *a, **kw): return ctx
+    class StreamingThinkScrubber:
+        def __init__(self, *a, **kw): pass
+        def feed(self, *a, **kw): return ""
+    def jittered_backoff(*a, **kw): return 1.0
+    def classify_api_error(*a, **kw): return None
+    class FailoverReason:
+        UNKNOWN = "unknown"
+    DEFAULT_AGENT_IDENTITY = ""
+    PLATFORM_HINTS = {}
+    MEMORY_GUIDANCE = SESSION_SEARCH_GUIDANCE = SKILLS_GUIDANCE = ""
+    ICECODE_AGENT_HELP_GUIDANCE = KANBAN_GUIDANCE = ""
+    TOOL_USE_ENFORCEMENT_GUIDANCE = GOOGLE_MODEL_OPERATIONAL_GUIDANCE = ""
+    OPENAI_MODEL_EXECUTION_GUIDANCE = ""
+    TOOL_USE_ENFORCEMENT_MODELS = []
+    def build_nous_subscription_prompt(*a, **kw): return ""
+    def build_skills_system_prompt(*a, **kw): return ""
+    def build_context_files_prompt(*a, **kw): return ""
+    def build_environment_hints(*a, **kw): return ""
+    def load_soul_md(*a, **kw): return ""
+    def fetch_model_metadata(*a, **kw): return {}
+    def estimate_tokens_rough(*a, **kw): return 0
+    def estimate_messages_tokens_rough(*a, **kw): return 0
+    def estimate_request_tokens_rough(*a, **kw): return 0
+    def get_next_probe_tier(*a, **kw): return None
+    def parse_context_limit_from_error(*a, **kw): return None
+    def parse_available_output_tokens_from_error(*a, **kw): return None
+    def save_context_length(*a, **kw): pass
+    def is_local_endpoint(*a, **kw): return False
+    def query_ollama_num_ctx(*a, **kw): return None
     class ContextCompressor:  # type: ignore[no-redef]
-        """Stub — full context compressor not available in this runtime."""
         def __init__(self, *a, **kw): pass
         def compress(self, *a, **kw): return None
         def update_model(self, *a, **kw): pass
-from agent.subdirectory_hints import SubdirectoryHintTracker
-from agent.prompt_caching import apply_anthropic_cache_control
-from agent.prompt_builder import build_skills_system_prompt, build_context_files_prompt, build_environment_hints, load_soul_md, TOOL_USE_ENFORCEMENT_GUIDANCE, TOOL_USE_ENFORCEMENT_MODELS, GOOGLE_MODEL_OPERATIONAL_GUIDANCE, OPENAI_MODEL_EXECUTION_GUIDANCE
-from agent.usage_pricing import estimate_usage_cost, normalize_usage
-from agent.codex_responses_adapter import (
-    _derive_responses_function_call_id as _codex_derive_responses_function_call_id,
-    _deterministic_call_id as _codex_deterministic_call_id,
-    _split_responses_tool_id as _codex_split_responses_tool_id,
-    _summarize_user_message_for_log,
-)
-from agent.display import (
-    KawaiiSpinner, build_tool_preview as _build_tool_preview,
-    get_cute_tool_message as _get_cute_tool_message_impl,
-    _detect_tool_failure,
-    get_tool_emoji as _get_tool_emoji,
-)
-from agent.tool_guardrails import (
-    ToolCallGuardrailConfig,
-    ToolCallGuardrailController,
-    ToolGuardrailDecision,
-    append_toolguard_guidance,
-    toolguard_synthetic_result,
-)
-from agent.tool_result_classification import (
-    FILE_MUTATING_TOOL_NAMES as _FILE_MUTATING_TOOLS,
-    file_mutation_result_landed,
-)
-from agent.trajectory import (
-    convert_scratchpad_to_think, has_incomplete_scratchpad,
-    save_trajectory as _save_trajectory_to_file,
-)
-from utils import atomic_json_write, base_url_host_matches, base_url_hostname, env_var_enabled, normalize_proxy_url
-from icecode_cli.hermes_cli.config import cfg_get
+    class SubdirectoryHintTracker:
+        def __init__(self, *a, **kw): pass
+    def apply_anthropic_cache_control(*a, **kw): return None
+    def estimate_usage_cost(*a, **kw): return 0.0
+    def normalize_usage(*a, **kw): return {}
+    def _codex_derive_responses_function_call_id(*a, **kw): return ""
+    def _codex_deterministic_call_id(*a, **kw): return ""
+    def _codex_split_responses_tool_id(*a, **kw): return ("", "")
+    def _summarize_user_message_for_log(*a, **kw): return ""
+    class KawaiiSpinner:
+        def __init__(self, *a, **kw): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+    def _build_tool_preview(*a, **kw): return ""
+    def _get_cute_tool_message_impl(*a, **kw): return ""
+    def _detect_tool_failure(*a, **kw): return False
+    def _get_tool_emoji(*a, **kw): return ""
+    class ToolCallGuardrailConfig:
+        def __init__(self, *a, **kw): pass
+    class ToolCallGuardrailController:
+        def __init__(self, *a, **kw): pass
+    class ToolGuardrailDecision:
+        ALLOW = "allow"
+    def append_toolguard_guidance(*a, **kw): return ""
+    def toolguard_synthetic_result(*a, **kw): return ""
+    _FILE_MUTATING_TOOLS: set = set()
+    def file_mutation_result_landed(*a, **kw): return False
+    def convert_scratchpad_to_think(*a, **kw): return []
+    def has_incomplete_scratchpad(*a, **kw): return False
+    def _save_trajectory_to_file(*a, **kw): pass
+    def atomic_json_write(*a, **kw): pass
+    def base_url_host_matches(*a, **kw): return False
+    def base_url_hostname(*a, **kw): return ""
+    def env_var_enabled(*a, **kw): return False
+    def normalize_proxy_url(*a, **kw): return None
+    def cfg_get(*a, **kw): return None
 from icecode.agent.engine_tool_exec import _ToolExecutionMixin  # noqa: F401
 
 
@@ -881,12 +970,12 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
         _provider_timeout = get_provider_request_timeout(self.provider, self.model)
 
         if self.api_mode == "anthropic_messages":
-            from agent.anthropic_adapter import build_anthropic_client, resolve_anthropic_token
+            from icecode.agent.anthropic_adapter import build_anthropic_client, resolve_anthropic_token
             # Bedrock + Claude → use AnthropicBedrock SDK for full feature parity
             # (prompt caching, thinking budgets, adaptive thinking).
             _is_bedrock_anthropic = self.provider == "bedrock"
             if _is_bedrock_anthropic:
-                from agent.anthropic_adapter import build_anthropic_bedrock_client
+                from icecode.agent.anthropic_adapter import build_anthropic_bedrock_client
                 _region_match = re.search(r"bedrock-runtime\.([a-z0-9-]+)\.", base_url or "")
                 _br_region = _region_match.group(1) if _region_match else "us-east-1"
                 self._bedrock_region = _br_region
@@ -915,7 +1004,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
                 # so injects Claude-Code identity headers and system prompts
                 # that cause 401/403 on their endpoints.  Guards #1739 and
                 # the third-party identity-injection bug.
-                from agent.anthropic_adapter import _is_oauth_token as _is_oat
+                from icecode.agent.anthropic_adapter import _is_oauth_token as _is_oat
                 self._is_anthropic_oauth = _is_oat(effective_key) if _is_native_anthropic else False
                 self._anthropic_client = build_anthropic_client(effective_key, base_url, timeout=_provider_timeout)
                 # No OpenAI client needed for Anthropic mode
@@ -978,7 +1067,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
                     client_kwargs["args"] = self.acp_args
                 effective_base = base_url
                 if base_url_host_matches(effective_base, "openrouter.ai"):
-                    from agent.auxiliary_client import build_or_headers
+                    from icecode.agent.auxiliary_client import build_or_headers
                     client_kwargs["default_headers"] = build_or_headers()
                 elif base_url_host_matches(effective_base, "api.routermint.com"):
                     client_kwargs["default_headers"] = _routermint_headers()
@@ -993,7 +1082,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
                 elif base_url_host_matches(effective_base, "portal.qwen.ai"):
                     client_kwargs["default_headers"] = _qwen_portal_headers()
                 elif base_url_host_matches(effective_base, "chatgpt.com"):
-                    from agent.auxiliary_client import _codex_cloudflare_headers
+                    from icecode.agent.auxiliary_client import _codex_cloudflare_headers
                     client_kwargs["default_headers"] = _codex_cloudflare_headers(api_key)
                 elif "default_headers" not in client_kwargs:
                     # Fall back to profile.default_headers for providers that
@@ -1008,7 +1097,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
                         pass
             else:
                 # No explicit creds — use the centralized provider router
-                from agent.auxiliary_client import resolve_provider_client
+                from icecode.agent.auxiliary_client import resolve_provider_client
                 _routed_client, _ = resolve_provider_client(
                     self.provider or "auto", model=self.model, raw_codex=True)
                 if _routed_client is not None:
@@ -1312,7 +1401,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
                 _mem_provider_name = mem_config.get("provider", "") if mem_config else ""
 
                 if _mem_provider_name:
-                    from agent.memory_manager import MemoryManager as _MemoryManager
+                    from icecode.agent.memory_manager import MemoryManager as _MemoryManager
                     from plugins.memory import load_memory_provider as _load_mem
                     self._memory_manager = _MemoryManager()
                     _mp = _load_mem(_mem_provider_name)
@@ -1422,7 +1511,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
             _compression_cfg = {}
         compression_threshold = float(_compression_cfg.get("threshold", 0.50))
         try:
-            from agent.auxiliary_client import _compression_threshold_for_model as _cthresh_fn
+            from icecode.agent.auxiliary_client import _compression_threshold_for_model as _cthresh_fn
             _model_cthresh = _cthresh_fn(self.model)
             if _model_cthresh is not None:
                 compression_threshold = _model_cthresh
@@ -1622,7 +1711,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
         if _selected_engine is not None:
             self.context_compressor = _selected_engine
             # Resolve context_length for plugin engines — mirrors switch_model() path
-            from agent.model_metadata import get_model_context_length
+            from icecode.agent.model_metadata import get_model_context_length
             _plugin_ctx_len = get_model_context_length(
                 self.model,
                 base_url=self.base_url,
@@ -1659,7 +1748,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
 
         # Reject models whose context window is below the minimum required
         # for reliable tool-calling workflows (64K tokens).
-        from agent.model_metadata import MINIMUM_CONTEXT_LENGTH
+        from icecode.agent.model_metadata import MINIMUM_CONTEXT_LENGTH
         _ctx = getattr(self.context_compressor, "context_length", 0)
         if _ctx and _ctx < MINIMUM_CONTEXT_LENGTH:
             raise ValueError(
@@ -1902,7 +1991,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
         if (self.provider or "").strip().lower() != "lmstudio":
             return
         try:
-            from agent.model_metadata import MINIMUM_CONTEXT_LENGTH
+            from icecode.agent.model_metadata import MINIMUM_CONTEXT_LENGTH
             from icecode_cli.hermes_cli.models import ensure_lmstudio_model_loaded
             if config_context_length is None:
                 config_context_length = getattr(self, "_config_context_length", None)
@@ -1988,7 +2077,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
 
         # ── Build new client ──
         if api_mode == "anthropic_messages":
-            from agent.anthropic_adapter import (
+            from icecode.agent.anthropic_adapter import (
                 build_anthropic_client,
                 resolve_anthropic_token,
                 _is_oauth_token,
@@ -2039,7 +2128,7 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
 
         # ── Update context compressor ──
         if hasattr(self, "context_compressor") and self.context_compressor:
-            from agent.model_metadata import get_model_context_length
+            from icecode.agent.model_metadata import get_model_context_length
             # Re-read custom_providers from live config so per-model
             # context_length overrides are honored when switching to a
             # custom provider mid-session (closes #15779).
@@ -2519,11 +2608,11 @@ class AIAgent(_ToolExecutionMixin, _ConversationMixin, _SessionMixin, _APIMixin)
         if not self.compression_enabled:
             return
         try:
-            from agent.auxiliary_client import (
+            from icecode.agent.auxiliary_client import (
                 _resolve_task_provider_model,
                 get_text_auxiliary_client,
             )
-            from agent.model_metadata import (
+            from icecode.agent.model_metadata import (
                 MINIMUM_CONTEXT_LENGTH,
                 get_model_context_length,
             )

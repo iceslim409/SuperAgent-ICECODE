@@ -35,13 +35,22 @@ from icecode_cli.hermes_cli.providers import (
 from icecode_cli.hermes_cli.model_normalize import (
     normalize_model_for_provider,
 )
-from agent.models_dev import (
-    ModelCapabilities,
-    ModelInfo,
-    get_model_capabilities,
-    get_model_info,
-    list_provider_models,
-)
+try:
+    from agent.models_dev import (
+        ModelCapabilities,
+        ModelInfo,
+        get_model_capabilities,
+        get_model_info,
+        list_provider_models,
+    )
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.models_dev import (  # type: ignore[no-redef]
+        ModelCapabilities,
+        ModelInfo,
+        get_model_capabilities,
+        get_model_info,
+        list_provider_models,
+    )
 
 logger = logging.getLogger(__name__)
 

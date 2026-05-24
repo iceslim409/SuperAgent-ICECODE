@@ -22,7 +22,7 @@ import json
 import logging
 from typing import Any, Dict, Optional
 
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 logger = logging.getLogger(__name__)
 

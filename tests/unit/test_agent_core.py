@@ -1,6 +1,7 @@
 """Unit tests for ICECodeAgent core functionality."""
 import asyncio
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -296,3 +297,236 @@ class TestSelectTools:
         selected = _select_tools_for_message(msg, self.all_tools)
         names = [t["function"]["name"] for t in selected]
         assert len(names) == len(set(names)), "No duplicate tools should be returned"
+
+
+# ── _get_client_config ─────────────────────────────────────────────────────────
+
+class TestGetClientConfig:
+    def test_ollama_default(self):
+        from icecode.agent.core import _get_client_config
+        cfg = _get_client_config("", "ollama")
+        assert "localhost:11434" in cfg["base_url"]
+        assert cfg["api_key"] == "ollama"
+        assert cfg.get("_is_ollama") is True
+
+    def test_explicit_base_url_overrides_provider(self):
+        from icecode.agent.core import _get_client_config
+        cfg = _get_client_config("my-model", "ollama", base_url="http://myserver:8080")
+        assert "myserver:8080" in cfg["base_url"]
+        assert cfg["model"] == "my-model"
+
+    def test_http_string_as_provider(self):
+        from icecode.agent.core import _get_client_config
+        cfg = _get_client_config("some-model", "http://custom:9000")
+        assert "custom:9000" in cfg["base_url"]
+        assert cfg["model"] == "some-model"
+
+    def test_empty_provider_defaults_to_ollama(self):
+        from icecode.agent.core import _get_client_config
+        cfg = _get_client_config("", "")
+        assert "localhost:11434" in cfg["base_url"]
+        assert cfg.get("_is_ollama") is True
+
+    def test_base_url_appends_v1(self):
+        from icecode.agent.core import _get_client_config
+        cfg = _get_client_config("m", "ollama", base_url="http://srv:1234/")
+        assert cfg["base_url"].endswith("/v1")
+
+
+# ── ICECodeAgent init ──────────────────────────────────────────────────────────
+
+class TestICECodeAgentInit:
+    def test_defaults(self):
+        from icecode.agent.core import ICECodeAgent
+        agent = ICECodeAgent()
+        assert agent.provider == "ollama"
+        assert agent.max_iterations == 10
+        assert len(agent.session_id) > 0
+        assert agent.history == []
+        assert not agent.autopilot
+
+    def test_custom_session_id(self):
+        from icecode.agent.core import ICECodeAgent
+        agent = ICECodeAgent(session_id="my_custom_session")
+        assert agent.session_id == "my_custom_session"
+
+    def test_autopilot_raises_max_iterations(self):
+        from icecode.agent.core import ICECodeAgent
+        agent = ICECodeAgent(max_iterations=5, autopilot=True)
+        assert agent.max_iterations >= 30
+
+    def test_system_prompt_contains_cwd(self):
+        from icecode.agent.core import ICECodeAgent
+        agent = ICECodeAgent()
+        system = agent._system(has_tools=False)
+        assert os.getcwd() in system
+
+    def test_system_prompt_no_tools_vs_tools(self):
+        from icecode.agent.core import ICECodeAgent
+        agent = ICECodeAgent()
+        no_tools = agent._system(has_tools=False)
+        with_tools = agent._system(has_tools=True)
+        assert no_tools != with_tools
+
+    def test_usage_tracker_attached(self):
+        from icecode.agent.core import ICECodeAgent, UsageTracker
+        agent = ICECodeAgent()
+        assert isinstance(agent.usage, UsageTracker)
+
+
+# ── ICECodeAgent streaming (mocked OpenAI) ────────────────────────────────────
+
+def _make_text_chunk(text: str):
+    """Build a mock streaming chunk that carries text content."""
+    chunk = MagicMock()
+    chunk.usage = None
+    delta = MagicMock()
+    delta.content = text
+    delta.tool_calls = None
+    delta.reasoning = None
+    delta.reasoning_content = None
+    choice = MagicMock()
+    choice.delta = delta
+    chunk.choices = [choice]
+    return chunk
+
+
+def _make_empty_chunk():
+    """Final chunk with empty choices (Ollama-style usage terminator)."""
+    chunk = MagicMock()
+    chunk.choices = []
+    chunk.usage = None
+    return chunk
+
+
+def _mock_client_for(chunks):
+    """Return a mock AsyncOpenAI client whose stream yields *chunks*."""
+    async def _iter():
+        for c in chunks:
+            yield c
+
+    mock_stream = MagicMock()
+    mock_stream.__aiter__ = lambda s: _iter()
+
+    mock_client = MagicMock()
+    mock_client.chat.completions.create = AsyncMock(return_value=mock_stream)
+    return mock_client
+
+
+class TestICECodeAgentStream:
+    @pytest.mark.asyncio
+    async def test_yields_session_event_first(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([_make_text_chunk("hi"), _make_empty_chunk()])
+        agent = ICECodeAgent(model="test", provider="ollama", session_id="s_test")
+        with patch("openai.AsyncOpenAI", return_value=client):
+            events = [e async for e in agent.stream("hello")]
+        assert events[0]["type"] == "session"
+        assert events[0]["session_id"] == "s_test"
+
+    @pytest.mark.asyncio
+    async def test_yields_text_events(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([
+            _make_text_chunk("hello "),
+            _make_text_chunk("world"),
+            _make_empty_chunk(),
+        ])
+        agent = ICECodeAgent(model="test", provider="ollama")
+        with patch("openai.AsyncOpenAI", return_value=client):
+            events = [e async for e in agent.stream("say hello")]
+        texts = [e["content"] for e in events if e["type"] == "text"]
+        assert "hello " in texts
+        assert "world" in texts
+
+    @pytest.mark.asyncio
+    async def test_always_yields_done_event(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([_make_text_chunk("ok"), _make_empty_chunk()])
+        agent = ICECodeAgent(model="test", provider="ollama")
+        with patch("openai.AsyncOpenAI", return_value=client):
+            events = [e async for e in agent.stream("hi")]
+        assert events[-1]["type"] == "done"
+
+    @pytest.mark.asyncio
+    async def test_yields_usage_event(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([_make_text_chunk("ok"), _make_empty_chunk()])
+        agent = ICECodeAgent(model="test", provider="ollama")
+        with patch("openai.AsyncOpenAI", return_value=client):
+            events = [e async for e in agent.stream("hi")]
+        usage_events = [e for e in events if e["type"] == "usage"]
+        assert len(usage_events) == 1
+        assert "total_tokens" in usage_events[0]["usage"]
+
+    @pytest.mark.asyncio
+    async def test_appends_user_and_assistant_to_history(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([_make_text_chunk("answer"), _make_empty_chunk()])
+        agent = ICECodeAgent(model="test", provider="ollama")
+        with patch("openai.AsyncOpenAI", return_value=client):
+            async for _ in agent.stream("my question"):
+                pass
+        roles = [m["role"] for m in agent.history]
+        assert "user" in roles
+        assert "assistant" in roles
+
+    @pytest.mark.asyncio
+    async def test_run_returns_concatenated_text(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([
+            _make_text_chunk("foo"),
+            _make_text_chunk("bar"),
+            _make_empty_chunk(),
+        ])
+        agent = ICECodeAgent(model="test", provider="ollama")
+        with patch("openai.AsyncOpenAI", return_value=client):
+            result = await agent.run("test")
+        assert result == "foobar"
+
+    @pytest.mark.asyncio
+    async def test_error_from_api_yields_error_event_then_done(self):
+        from icecode.agent.core import ICECodeAgent
+        mock_client = MagicMock()
+        mock_client.chat.completions.create = AsyncMock(
+            side_effect=Exception("Connection refused")
+        )
+        agent = ICECodeAgent(model="test", provider="ollama")
+        with patch("openai.AsyncOpenAI", return_value=mock_client):
+            events = [e async for e in agent.stream("hi")]
+        types = [e["type"] for e in events]
+        assert "error" in types
+        assert "done" in types
+        assert types[-1] == "done"
+
+    @pytest.mark.asyncio
+    async def test_history_trimmed_at_12(self):
+        from icecode.agent.core import ICECodeAgent
+        client = _mock_client_for([_make_text_chunk("ok"), _make_empty_chunk()])
+        agent = ICECodeAgent(model="test", provider="ollama")
+        # Pre-fill history with 20 messages
+        for i in range(20):
+            role = "user" if i % 2 == 0 else "assistant"
+            agent.history.append({"role": role, "content": f"msg {i}"})
+
+        captured_messages = []
+
+        async def fake_create(**kwargs):
+            captured_messages.extend(kwargs.get("messages", []))
+            async def _iter():
+                yield _make_text_chunk("ok")
+                yield _make_empty_chunk()
+            mock_stream = MagicMock()
+            mock_stream.__aiter__ = lambda s: _iter()
+            return mock_stream
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create = fake_create
+
+        with patch("openai.AsyncOpenAI", return_value=mock_client):
+            async for _ in agent.stream("new message"):
+                pass
+
+        # System prompt is index 0; actual history messages follow
+        history_sent = [m for m in captured_messages if m.get("role") != "system"]
+        assert len(history_sent) <= 13  # 12 trimmed + 1 new user message

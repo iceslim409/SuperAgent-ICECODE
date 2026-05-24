@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 from .store import VectorStore
 from .indexer import DocumentIndexer
-from .retriever import RAGRetriever
+from .retriever import RAGRetriever, check_embedder_available
 
 
 class KnowledgeManager:
@@ -18,9 +18,10 @@ class KnowledgeManager:
     _lock = threading.Lock()
 
     def __init__(self):
-        self._store = VectorStore(dim=384)
+        self._store = VectorStore(dim=768)  # nomic-embed-text / MiniLM-L12
         self._indexer = DocumentIndexer()
         self._retriever = RAGRetriever(self._store)
+        self._embedder_ok: Optional[bool] = None  # cached after first check
 
     @classmethod
     def instance(cls) -> "KnowledgeManager":
@@ -32,17 +33,29 @@ class KnowledgeManager:
 
     @property
     def available(self) -> bool:
-        try:
-            import faiss
-            import sentence_transformers
-            return True
-        except ImportError:
+        """True if FAISS and Ollama embedder are both ready."""
+        if not self._store.available:
             return False
+        if self._embedder_ok is None:
+            self._embedder_ok = check_embedder_available()
+            if not self._embedder_ok:
+                logger.warning(
+                    "Knowledge base embedder unavailable — "
+                    f"ensure Ollama is running and '{self._retriever.embed_model}' is pulled. "
+                    f"Run: ollama pull {self._retriever.embed_model}"
+                )
+        return self._embedder_ok
+
+    def _unavailable_msg(self) -> str:
+        return (
+            f"Knowledge base unavailable. "
+            f"Ensure Ollama is running and run: ollama pull {self._retriever.embed_model}"
+        )
 
     def index_file(self, path: str) -> Dict[str, Any]:
         """Index a single file. Returns stats."""
         if not self.available:
-            return {"error": "RAG not available. Install: pip install sentence-transformers faiss-cpu"}
+            return {"error": self._unavailable_msg()}
         chunks = self._indexer.index_file(path)
         if not chunks:
             return {"indexed": 0, "source": path, "error": "No content extracted"}
@@ -52,12 +65,11 @@ class KnowledgeManager:
     def index_directory(self, path: str, recursive: bool = True) -> Dict[str, Any]:
         """Index all supported files in a directory. Returns stats."""
         if not self.available:
-            return {"error": "RAG not available. Install: pip install sentence-transformers faiss-cpu"}
+            return {"error": self._unavailable_msg()}
         chunks = self._indexer.index_directory(path, recursive=recursive)
         if not chunks:
             return {"indexed": 0, "source": path, "error": "No content extracted"}
 
-        # Group by source for efficient storage
         from collections import defaultdict
         by_source: Dict[str, List] = defaultdict(list)
         for c in chunks:
@@ -85,4 +97,5 @@ class KnowledgeManager:
     def stats(self) -> Dict[str, Any]:
         s = self._store.stats()
         s["rag_available"] = self.available
+        s["embed_model"] = self._retriever.embed_model
         return s

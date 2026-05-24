@@ -27,7 +27,10 @@ from icecode_cli.hermes_cli.colors import Colors, color
 from icecode_cli.hermes_cli.models import _ICECODE_USER_AGENT
 from icecode_cli.hermes_cli.vercel_auth import describe_vercel_auth
 from icecode.icecode_constants import OPENROUTER_MODELS_URL
-from utils import base_url_host_matches
+try:
+    from utils import base_url_host_matches
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches
 
 
 _PROVIDER_ENV_HINTS = (

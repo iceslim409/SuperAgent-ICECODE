@@ -13,8 +13,11 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from utils import safe_json_loads
-from agent.tool_result_classification import file_mutation_result_landed
+try:
+    from utils import safe_json_loads
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import safe_json_loads
+from icecode.agent.tool_result_classification import file_mutation_result_landed
 
 
 IDEMPOTENT_TOOL_NAMES = frozenset(

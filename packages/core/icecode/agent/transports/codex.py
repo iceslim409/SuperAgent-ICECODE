@@ -7,8 +7,8 @@ streaming, or the _run_codex_stream() call path.
 
 from typing import Any, Dict, List, Optional
 
-from agent.transports.base import ProviderTransport
-from agent.transports.types import NormalizedResponse, ToolCall
+from icecode.agent.transports.base import ProviderTransport
+from icecode.agent.transports.types import NormalizedResponse, ToolCall
 
 
 class ResponsesApiTransport(ProviderTransport):
@@ -23,12 +23,12 @@ class ResponsesApiTransport(ProviderTransport):
 
     def convert_messages(self, messages: List[Dict[str, Any]], **kwargs) -> Any:
         """Convert OpenAI chat messages to Responses API input items."""
-        from agent.codex_responses_adapter import _chat_messages_to_responses_input
+        from icecode.agent.codex_responses_adapter import _chat_messages_to_responses_input
         return _chat_messages_to_responses_input(messages)
 
     def convert_tools(self, tools: List[Dict[str, Any]]) -> Any:
         """Convert OpenAI tool schemas to Responses API function definitions."""
-        from agent.codex_responses_adapter import _responses_tools
+        from icecode.agent.codex_responses_adapter import _responses_tools
         return _responses_tools(tools)
 
     def build_kwargs(
@@ -56,7 +56,7 @@ class ResponsesApiTransport(ProviderTransport):
             is_xai_responses: bool — xAI/Grok backend
             github_reasoning_extra: dict | None — Copilot reasoning params
         """
-        from agent.codex_responses_adapter import (
+        from icecode.agent.codex_responses_adapter import (
             _chat_messages_to_responses_input,
             _responses_tools,
         )
@@ -104,7 +104,7 @@ class ResponsesApiTransport(ProviderTransport):
             kwargs["prompt_cache_key"] = session_id
 
         if reasoning_enabled and is_xai_responses:
-            from agent.model_metadata import grok_supports_reasoning_effort
+            from icecode.agent.model_metadata import grok_supports_reasoning_effort
 
             kwargs["include"] = ["reasoning.encrypted_content"]
             # xAI rejects `reasoning.effort` on grok-4 / grok-4-fast / grok-3
@@ -169,7 +169,7 @@ class ResponsesApiTransport(ProviderTransport):
 
     def normalize_response(self, response: Any, **kwargs) -> NormalizedResponse:
         """Normalize Codex Responses API response to NormalizedResponse."""
-        from agent.codex_responses_adapter import (
+        from icecode.agent.codex_responses_adapter import (
             _normalize_codex_response,
         )
 
@@ -229,7 +229,7 @@ class ResponsesApiTransport(ProviderTransport):
 
         Normalizes input items, strips unsupported fields, validates structure.
         """
-        from agent.codex_responses_adapter import _preflight_codex_api_kwargs
+        from icecode.agent.codex_responses_adapter import _preflight_codex_api_kwargs
         return _preflight_codex_api_kwargs(api_kwargs, allow_stream=allow_stream)
 
     def map_finish_reason(self, raw_reason: str) -> str:
@@ -250,6 +250,6 @@ class ResponsesApiTransport(ProviderTransport):
 
 
 # Auto-register on import
-from agent.transports import register_transport  # noqa: E402
+from icecode.agent.transports import register_transport  # noqa: E402
 
 register_transport("codex_responses", ResponsesApiTransport)

@@ -82,11 +82,14 @@ class TestVectorStore:
 
     def test_stats_returns_dict(self, tmp_path, monkeypatch):
         """Stats method returns expected keys."""
-        monkeypatch.setenv("HOME", str(tmp_path))
         try:
             import faiss
-            from icecode.knowledge.store import VectorStore
-            vs = VectorStore(dim=4)
+            import icecode.knowledge.store as store_mod
+            monkeypatch.setattr(store_mod, "_STORE_DIR", tmp_path)
+            monkeypatch.setattr(store_mod, "_INDEX_FILE", tmp_path / "index.faiss")
+            monkeypatch.setattr(store_mod, "_META_FILE", tmp_path / "meta.json")
+            monkeypatch.setattr(store_mod, "_SOURCES_FILE", tmp_path / "sources.json")
+            vs = store_mod.VectorStore(dim=4)
             stats = vs.stats()
             assert "total_chunks" in stats
             assert "total_sources" in stats
@@ -95,11 +98,14 @@ class TestVectorStore:
             pytest.skip("faiss not installed")
 
     def test_add_and_search(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("HOME", str(tmp_path))
         try:
             import faiss
-            from icecode.knowledge.store import VectorStore
-            vs = VectorStore(dim=4)
+            import icecode.knowledge.store as store_mod
+            monkeypatch.setattr(store_mod, "_STORE_DIR", tmp_path)
+            monkeypatch.setattr(store_mod, "_INDEX_FILE", tmp_path / "index.faiss")
+            monkeypatch.setattr(store_mod, "_META_FILE", tmp_path / "meta.json")
+            monkeypatch.setattr(store_mod, "_SOURCES_FILE", tmp_path / "sources.json")
+            vs = store_mod.VectorStore(dim=4)
             embeddings = np.array([[0.1, 0.2, 0.3, 0.4], [0.9, 0.8, 0.7, 0.6]], dtype="float32")
             meta = [
                 {"id": "c1", "text": "Python programming", "source": "test.py"},

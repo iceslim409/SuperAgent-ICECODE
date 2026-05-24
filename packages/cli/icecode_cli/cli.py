@@ -81,17 +81,32 @@ except Exception:
 import threading
 import queue
 
-from agent.usage_pricing import (
-    CanonicalUsage,
-    estimate_usage_cost,
-    format_duration_compact,
-    format_token_count_compact,
-)
-from agent.markdown_tables import (
-    is_table_divider,
-    looks_like_table_row,
-    realign_markdown_tables,
-)
+try:
+    from agent.usage_pricing import (
+        CanonicalUsage,
+        estimate_usage_cost,
+        format_duration_compact,
+        format_token_count_compact,
+    )
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.usage_pricing import (  # type: ignore[no-redef]
+        CanonicalUsage,
+        estimate_usage_cost,
+        format_duration_compact,
+        format_token_count_compact,
+    )
+try:
+    from agent.markdown_tables import (
+        is_table_divider,
+        looks_like_table_row,
+        realign_markdown_tables,
+    )
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.markdown_tables import (  # type: ignore[no-redef]
+        is_table_divider,
+        looks_like_table_row,
+        realign_markdown_tables,
+    )
 # NOTE: `from agent.account_usage import ...` is deliberately NOT at module
 # top — it transitively pulls the OpenAI SDK chain (~230 ms cold) and is only
 # needed when the user runs `/limits`. Lazy-imported inside the handler below.
@@ -109,7 +124,10 @@ from icecode_cli.hermes_cli.browser_connect import (
     try_launch_chrome_debug,
 )
 from icecode_cli.hermes_cli.env_loader import load_hermes_dotenv
-from utils import base_url_host_matches, is_truthy_value
+try:
+    from utils import base_url_host_matches, is_truthy_value
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, is_truthy_value
 
 _hermes_home = get_hermes_home()
 _project_env = Path(__file__).parent / '.env'
@@ -2186,11 +2204,18 @@ def _looks_like_slash_command(text: str) -> bool:
 # Skill Slash Commands — dynamic commands generated from installed skills
 # ============================================================================
 
-from agent.skill_commands import (
-    scan_skill_commands,
-    build_skill_invocation_message,
-    build_preloaded_skills_prompt,
-)
+try:
+    from agent.skill_commands import (
+        scan_skill_commands,
+        build_skill_invocation_message,
+        build_preloaded_skills_prompt,
+    )
+except (ImportError, ModuleNotFoundError):
+    from icecode.learning.skills.skill_commands import (  # type: ignore[no-redef]
+        scan_skill_commands,
+        build_skill_invocation_message,
+        build_preloaded_skills_prompt,
+    )
 
 _skill_commands = scan_skill_commands()
 

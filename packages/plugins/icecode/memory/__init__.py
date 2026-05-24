@@ -272,7 +272,10 @@ def _load_provider_from_dir(provider_dir: Path) -> Optional["MemoryProvider"]:
             logger.debug("register() failed for %s: %s", name, e)
 
     # Fallback: find a MemoryProvider subclass and instantiate it
+    try:
     from agent.memory_provider import MemoryProvider
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.memory_provider import MemoryProvider  # type: ignore[no-redef]
     for attr_name in dir(mod):
         attr = getattr(mod, attr_name, None)
         if (isinstance(attr, type) and issubclass(attr, MemoryProvider)

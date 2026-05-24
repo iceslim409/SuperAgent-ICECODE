@@ -31,11 +31,11 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-from agent.transports.codex_app_server import (
+from icecode.agent.transports.codex_app_server import (
     CodexAppServerClient,
     CodexAppServerError,
 )
-from agent.transports.codex_event_projector import CodexEventProjector
+from icecode.agent.transports.codex_event_projector import CodexEventProjector
 
 logger = logging.getLogger(__name__)
 

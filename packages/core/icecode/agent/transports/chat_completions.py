@@ -12,11 +12,11 @@ reasoning configuration, temperature handling, and extra_body assembly.
 import copy
 from typing import Any, Dict, List, Optional
 
-from agent.lmstudio_reasoning import resolve_lmstudio_effort
-from agent.moonshot_schema import is_moonshot_model, sanitize_moonshot_tools
-from agent.prompt_builder import DEVELOPER_ROLE_MODELS
-from agent.transports.base import ProviderTransport
-from agent.transports.types import NormalizedResponse, ToolCall, Usage
+from icecode.agent.lmstudio_reasoning import resolve_lmstudio_effort
+from icecode.agent.moonshot_schema import is_moonshot_model, sanitize_moonshot_tools
+from icecode.agent.prompt_builder import DEVELOPER_ROLE_MODELS
+from icecode.agent.transports.base import ProviderTransport
+from icecode.agent.transports.types import NormalizedResponse, ToolCall, Usage
 
 
 def _build_gemini_thinking_config(model: str, reasoning_config: dict | None) -> dict | None:
@@ -609,6 +609,6 @@ class ChatCompletionsTransport(ProviderTransport):
 
 
 # Auto-register on import
-from agent.transports import register_transport  # noqa: E402
+from icecode.agent.transports import register_transport  # noqa: E402
 
 register_transport("chat_completions", ChatCompletionsTransport)

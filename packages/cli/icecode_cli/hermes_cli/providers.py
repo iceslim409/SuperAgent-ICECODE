@@ -23,7 +23,10 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from utils import base_url_host_matches, base_url_hostname
+try:
+    from utils import base_url_host_matches, base_url_hostname
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname
 
 logger = logging.getLogger(__name__)
 

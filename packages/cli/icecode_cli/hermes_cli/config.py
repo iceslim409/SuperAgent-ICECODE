@@ -292,7 +292,10 @@ def get_container_exec_info() -> Optional[dict]:
 
 # Re-export from icecode_constants — canonical definition lives there.
 from icecode.icecode_constants import get_hermes_home  # noqa: F811,E402
-from utils import atomic_replace
+try:
+    from utils import atomic_replace
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace
 
 def get_config_path() -> Path:
     """Get the main config file path."""

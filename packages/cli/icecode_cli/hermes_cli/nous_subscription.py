@@ -9,7 +9,10 @@ from typing import Dict, Iterable, Optional, Set
 from icecode_cli.hermes_cli.auth import get_nous_auth_status
 from icecode_cli.hermes_cli.config import get_env_value, load_config
 from tools.managed_tool_gateway import is_managed_tool_gateway_ready
-from utils import is_truthy_value
+try:
+    from utils import is_truthy_value
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import is_truthy_value
 from tools.tool_backend_helpers import (
     fal_key_is_configured,
     has_direct_modal_credentials,

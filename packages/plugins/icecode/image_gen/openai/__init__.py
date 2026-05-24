@@ -27,7 +27,8 @@ import logging
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-from agent.image_gen_provider import (
+try:
+    from agent.image_gen_provider import (
     DEFAULT_ASPECT_RATIO,
     ImageGenProvider,
     error_response,

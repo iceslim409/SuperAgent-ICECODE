@@ -30,8 +30,8 @@ import re
 import inspect
 from typing import Any, Dict, List, Optional
 
-from agent.memory_provider import MemoryProvider
-from tools.registry import tool_error
+from icecode.agent.memory_provider import MemoryProvider
+from icecode_tools.registry import tool_error
 
 logger = logging.getLogger(__name__)
 

@@ -229,7 +229,6 @@ class TestMCPRoutes:
         assert data["transport"] == "stdio"
         assert "id" in data
         assert data["status"] == "disconnected"
-        return data["id"]
 
     def test_connect_server(self, client):
         # stdio transport without a real command returns ok:False — just verify status 200
@@ -259,3 +258,73 @@ class TestMCPRoutes:
         data = r.json()
         assert data["transport"] == "sse"
         client.delete(f"/api/mcp/{data['id']}")
+
+
+class TestWebSocketChat:
+    """WebSocket /api/chat/ws/{session_id} — tests using TestClient.websocket_connect."""
+
+    @pytest.fixture(scope="class")
+    def ws_client(self):
+        from fastapi.testclient import TestClient
+        from icecode_server.main import app
+        return TestClient(app)
+
+    def test_ping_pong(self, ws_client):
+        with ws_client.websocket_connect("/api/chat/ws/test_session_ping") as ws:
+            ws.send_json({"type": "ping"})
+            msg = ws.receive_json()
+            assert msg["type"] == "pong"
+
+    def test_empty_message_ignored(self, ws_client):
+        """Sending an empty message should not crash the server."""
+        from unittest.mock import patch, AsyncMock, MagicMock
+        import asyncio
+
+        async def _iter():
+            yield {"type": "text", "content": "hi"}
+            yield {"type": "done"}
+
+        mock_stream = MagicMock()
+        mock_stream.__aiter__ = lambda s: _iter()
+        mock_create = AsyncMock(return_value=mock_stream)
+        mock_client = MagicMock()
+        mock_client.chat.completions.create = mock_create
+
+        with ws_client.websocket_connect("/api/chat/ws/test_session_empty") as ws:
+            # Empty message — server should ignore silently
+            ws.send_json({"message": ""})
+            # Then a ping to verify server is still alive
+            ws.send_json({"type": "ping"})
+            msg = ws.receive_json()
+            assert msg["type"] == "pong"
+
+    def test_send_message_receives_done(self, ws_client):
+        """Sending a real message should yield at least session + done."""
+        from unittest.mock import patch, AsyncMock, MagicMock
+
+        async def _iter():
+            yield {"type": "session", "session_id": "test_ws_session"}
+            yield {"type": "text", "content": "hello from mock"}
+            yield {"type": "usage", "usage": {"total_tokens": 10}}
+            yield {"type": "done"}
+
+        mock_stream = MagicMock()
+        mock_stream.__aiter__ = lambda s: _iter()
+        mock_create = AsyncMock(return_value=mock_stream)
+        mock_oa = MagicMock()
+        mock_oa.chat.completions.create = mock_create
+
+        with patch("openai.AsyncOpenAI", return_value=mock_oa):
+            with ws_client.websocket_connect("/api/chat/ws/test_ws_session") as ws:
+                ws.send_json({"message": "say hello", "model": "test-model", "provider": "ollama"})
+                events = []
+                for _ in range(10):
+                    try:
+                        events.append(ws.receive_json())
+                        if events[-1].get("type") == "done":
+                            break
+                    except Exception:
+                        break
+
+        types = [e["type"] for e in events]
+        assert "done" in types

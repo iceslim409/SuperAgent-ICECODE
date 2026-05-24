@@ -40,7 +40,10 @@ import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-from agent.memory_provider import MemoryProvider
+try:
+    from agent.memory_provider import MemoryProvider
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.memory_provider import MemoryProvider  # type: ignore[no-redef]
 from icecode.icecode_constants import get_hermes_home
 from tools.registry import tool_error
 from icecode_cli.hermes_cli.config import cfg_get

@@ -48,7 +48,7 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Set
 from urllib.parse import quote, unquote
 
-from agent.lsp.protocol import (
+from icecode.agent.lsp.protocol import (
     ERROR_CONTENT_MODIFIED,
     ERROR_METHOD_NOT_FOUND,
     LSPProtocolError,

@@ -36,7 +36,7 @@ import logging
 import sys
 from pathlib import Path
 
-from providers.base import OMIT_TEMPERATURE, ProviderProfile  # noqa: F401
+from icecode.agent.providers.base import OMIT_TEMPERATURE, ProviderProfile  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -176,13 +176,13 @@ def _discover_providers() -> None:
     try:
         import pkgutil
 
-        import providers as _pkg
+        import icecode.agent.providers as _pkg
 
         for _importer, modname, _ispkg in pkgutil.iter_modules(_pkg.__path__):
             if modname.startswith("_") or modname == "base":
                 continue
             try:
-                importlib.import_module(f"providers.{modname}")
+                importlib.import_module(f"icecode.agent.providers.{modname}")
             except ImportError as exc:
                 logger.warning(
                     "Failed to import legacy provider module %s: %s", modname, exc

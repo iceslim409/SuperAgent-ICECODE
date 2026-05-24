@@ -15,7 +15,7 @@ from pathlib import Path
 from icecode.icecode_constants import get_hermes_home, get_skills_dir, is_wsl
 from typing import Optional
 
-from agent.skill_utils import (
+from icecode.learning.skills.skill_utils import (
     extract_skill_conditions,
     extract_skill_description,
     get_all_skills_dirs,
@@ -24,7 +24,7 @@ from agent.skill_utils import (
     parse_frontmatter,
     skill_matches_platform,
 )
-from utils import atomic_json_write
+from icecode.utils import atomic_json_write
 
 logger = logging.getLogger(__name__)
 

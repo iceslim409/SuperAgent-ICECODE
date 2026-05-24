@@ -41,7 +41,10 @@ from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from utils import base_url_host_matches, base_url_hostname
+try:
+    from utils import base_url_host_matches, base_url_hostname
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname
 import fire
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn, TimeRemainingColumn
 from rich.console import Console

@@ -16,7 +16,10 @@ from urllib.parse import urlparse
 import requests
 import yaml
 
-from utils import base_url_host_matches, base_url_hostname
+try:
+    from utils import base_url_host_matches, base_url_hostname
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname
 
 from icecode.icecode_constants import OPENROUTER_MODELS_URL
 
@@ -1536,7 +1539,7 @@ def get_model_context_length(
         and base_url_host_matches(base_url, "amazonaws.com")
     ):
         try:
-            from agent.bedrock_adapter import get_bedrock_context_length
+            from icecode.agent.bedrock_adapter import get_bedrock_context_length
             return get_bedrock_context_length(model)
         except ImportError:
             pass  # boto3 not installed — fall through to generic resolution
@@ -1659,7 +1662,7 @@ def get_model_context_length(
             save_context_length(model, base_url, ctx)
             return ctx
     if effective_provider:
-        from agent.models_dev import lookup_models_dev_context
+        from icecode.agent.models_dev import lookup_models_dev_context
         ctx = lookup_models_dev_context(effective_provider, model)
         if ctx:
             return ctx

@@ -1,12 +1,12 @@
 """Transport layer types and registry for provider response normalization.
 
 Usage:
-    from agent.transports import get_transport
+    from icecode.agent.transports import get_transport
     transport = get_transport("anthropic_messages")
     result = transport.normalize_response(raw_response)
 """
 
-from agent.transports.types import (
+from icecode.agent.transports.types import (
     NormalizedResponse,
     ToolCall,
     Usage,

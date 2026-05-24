@@ -13,8 +13,11 @@ from dataclasses import dataclass, field
 from difflib import unified_diff
 from pathlib import Path
 
-from utils import safe_json_loads
-from agent.tool_result_classification import file_mutation_result_landed
+try:
+    from utils import safe_json_loads
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import safe_json_loads
+from icecode.agent.tool_result_classification import file_mutation_result_landed
 
 # ANSI escape codes for coloring tool failure indicators
 _RED = "\033[31m"
@@ -149,7 +152,7 @@ def get_tool_emoji(tool_name: str, default: str = "⚡") -> str:
             return override
     # 2. Registry default
     try:
-        from tools.registry import registry
+        from icecode_tools.registry import registry
         emoji = registry.get_emoji(tool_name, default="")
         if emoji:
             return emoji

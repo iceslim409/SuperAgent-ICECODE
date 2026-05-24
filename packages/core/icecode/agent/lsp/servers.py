@@ -25,7 +25,7 @@ import shutil
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from agent.lsp.workspace import nearest_root, normalize_path
+from icecode.agent.lsp.workspace import nearest_root, normalize_path
 
 logger = logging.getLogger("agent.lsp.servers")
 
@@ -231,7 +231,7 @@ def _spawn_pyright(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
         "pyright-langserver", "pyright"
     )
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("pyright", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -274,7 +274,7 @@ def _detect_python(root: str) -> Optional[str]:
 def _spawn_typescript(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "typescript") or _which("typescript-language-server")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("typescript-language-server", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -291,7 +291,7 @@ def _spawn_typescript(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_gopls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "gopls") or _which("gopls")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("gopls", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -307,7 +307,7 @@ def _spawn_gopls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_rust_analyzer(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "rust-analyzer") or _which("rust-analyzer")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("rust-analyzer", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -323,7 +323,7 @@ def _spawn_rust_analyzer(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_clangd(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "clangd") or _which("clangd")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("clangd", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -342,7 +342,7 @@ _BASH_SHELLCHECK_WARNED = False
 def _spawn_bash_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "bash-language-server") or _which("bash-language-server")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("bash-language-server", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -370,7 +370,7 @@ def _spawn_bash_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_yaml_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "yaml-language-server") or _which("yaml-language-server")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("yaml-language-server", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -386,7 +386,7 @@ def _spawn_yaml_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_lua_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "lua-language-server") or _which("lua-language-server")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("lua-language-server", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -402,7 +402,7 @@ def _spawn_lua_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_intelephense(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "intelephense") or _which("intelephense")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("intelephense", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -433,7 +433,7 @@ def _spawn_ocamllsp(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 def _spawn_dockerfile_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
     bin_path = _resolve_override(ctx, "dockerfile-ls") or _which("docker-langserver")
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("dockerfile-language-server-nodejs", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -627,7 +627,7 @@ def _spawn_vue(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
         "vue-language-server"
     )
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("@vue/language-server", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -645,7 +645,7 @@ def _spawn_svelte(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
         "svelteserver", "svelte-language-server"
     )
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("svelte-language-server", ctx.install_strategy)
         if bin_path is None:
             return None
@@ -663,7 +663,7 @@ def _spawn_astro(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
         "astro-ls", "astro-language-server"
     )
     if bin_path is None:
-        from agent.lsp.install import try_install
+        from icecode.agent.lsp.install import try_install
         bin_path = try_install("@astrojs/language-server", ctx.install_strategy)
         if bin_path is None:
             return None

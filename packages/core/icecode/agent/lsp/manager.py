@@ -42,20 +42,20 @@ import time
 from concurrent.futures import Future as ConcurrentFuture
 from typing import Any, Dict, List, Optional, Tuple
 
-from agent.lsp import eventlog
-from agent.lsp.client import (
+from icecode.agent.lsp import eventlog
+from icecode.agent.lsp.client import (
     DIAGNOSTICS_DOCUMENT_WAIT,
     LSPClient,
     file_uri,
 )
-from agent.lsp.servers import (
+from icecode.agent.lsp.servers import (
     ServerContext,
     ServerDef,
     SpawnSpec,
     find_server_for_file,
     language_id_for,
 )
-from agent.lsp.workspace import (
+from icecode.agent.lsp.workspace import (
     clear_cache,
     is_inside_workspace,
     resolve_workspace_for_file,

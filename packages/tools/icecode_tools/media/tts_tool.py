@@ -2242,7 +2242,7 @@ if __name__ == "__main__":
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
-from tools.registry import registry, tool_error
+from icecode_tools.registry import registry, tool_error
 
 TTS_SCHEMA = {
     "name": "text_to_speech",

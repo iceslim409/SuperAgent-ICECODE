@@ -43,7 +43,10 @@ import yaml
 
 from icecode_cli.hermes_cli.config import get_hermes_home, get_config_path, read_raw_config
 from icecode.icecode_constants import OPENROUTER_BASE_URL
-from utils import atomic_replace, atomic_yaml_write, is_truthy_value
+try:
+    from utils import atomic_replace, atomic_yaml_write, is_truthy_value
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace, atomic_yaml_write, is_truthy_value
 
 logger = logging.getLogger(__name__)
 

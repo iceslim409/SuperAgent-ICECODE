@@ -38,7 +38,10 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
-from agent.memory_provider import MemoryProvider
+try:
+    from agent.memory_provider import MemoryProvider
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.memory_provider import MemoryProvider  # type: ignore[no-redef]
 from tools.registry import tool_error
 
 logger = logging.getLogger(__name__)

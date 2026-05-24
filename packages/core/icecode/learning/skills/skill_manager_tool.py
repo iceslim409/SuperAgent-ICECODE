@@ -42,7 +42,10 @@ from pathlib import Path
 from icecode.icecode_constants import get_hermes_home, display_hermes_home
 from typing import Dict, Any, Optional, Tuple
 
-from utils import atomic_replace, is_truthy_value
+try:
+    from utils import atomic_replace, is_truthy_value
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace, is_truthy_value
 from icecode_cli.hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)

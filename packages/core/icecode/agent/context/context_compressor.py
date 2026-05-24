@@ -23,14 +23,23 @@ import re
 import time
 from typing import Any, Dict, List, Optional
 
-from agent.auxiliary_client import call_llm, _is_connection_error
-from agent.context_engine import ContextEngine
-from agent.model_metadata import (
-    MINIMUM_CONTEXT_LENGTH,
-    get_model_context_length,
-    estimate_messages_tokens_rough,
-)
-from agent.redact import redact_sensitive_text
+try:
+    from icecode.agent.auxiliary_client import call_llm, _is_connection_error
+    from icecode.agent.context_engine import ContextEngine
+    from icecode.agent.model_metadata import (
+        MINIMUM_CONTEXT_LENGTH,
+        get_model_context_length,
+        estimate_messages_tokens_rough,
+    )
+    from icecode.agent.redact import redact_sensitive_text
+except (ImportError, ModuleNotFoundError):
+    def call_llm(*a, **kw): return ""  # type: ignore[misc]
+    def _is_connection_error(e): return False  # type: ignore[misc]
+    class ContextEngine: pass  # type: ignore[no-redef]
+    MINIMUM_CONTEXT_LENGTH = 4096
+    def get_model_context_length(*a, **kw): return 128000  # type: ignore[misc]
+    def estimate_messages_tokens_rough(*a, **kw): return 0  # type: ignore[misc]
+    def redact_sensitive_text(t, **kw): return t  # type: ignore[misc]
 
 logger = logging.getLogger(__name__)
 

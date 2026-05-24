@@ -10,7 +10,13 @@ from typing import Any, Dict, Optional
 logger = logging.getLogger(__name__)
 
 from icecode_cli.hermes_cli import auth as auth_mod
-from agent.credential_pool import CredentialPool, PooledCredential, get_custom_provider_pool_key, load_pool
+try:
+    from agent.credential_pool import CredentialPool, PooledCredential, get_custom_provider_pool_key, load_pool
+except (ImportError, ModuleNotFoundError, AttributeError):
+    class CredentialPool: pass  # type: ignore[no-redef]
+    class PooledCredential: pass  # type: ignore[no-redef]
+    def get_custom_provider_pool_key(*a, **kw): return ""  # type: ignore[misc]
+    def load_pool(*a, **kw): return {}  # type: ignore[misc]
 from icecode_cli.hermes_cli.auth import (
     AuthError,
     DEFAULT_CODEX_BASE_URL,
@@ -29,7 +35,10 @@ from icecode_cli.hermes_cli.auth import (
 )
 from icecode_cli.hermes_cli.config import get_compatible_custom_providers, load_config
 from icecode.icecode_constants import OPENROUTER_BASE_URL
-from utils import base_url_host_matches, base_url_hostname
+try:
+    from utils import base_url_host_matches, base_url_hostname
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname
 
 
 def _normalize_custom_provider_name(value: str) -> str:

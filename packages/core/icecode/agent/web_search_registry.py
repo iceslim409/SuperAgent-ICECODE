@@ -36,7 +36,7 @@ import logging
 import threading
 from typing import Dict, List, Optional
 
-from agent.web_search_provider import WebSearchProvider
+from icecode.agent.web_search_provider import WebSearchProvider
 
 logger = logging.getLogger(__name__)
 

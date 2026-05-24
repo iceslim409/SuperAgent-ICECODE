@@ -157,7 +157,7 @@ def _load_extended_tools(skip_registry: bool = False) -> List[Dict]:
     # Load registry-registered tools, filtered by check_fn (skip if caller handles it)
     if not skip_registry:
         try:
-            from tools.registry import registry as _registry
+            from icecode_tools.registry import registry as _registry
             for schema_entry in _registry.get_available_schemas():
                 name = schema_entry.get("function", {}).get("name", "")
                 if name and name not in seen_names:
@@ -182,7 +182,7 @@ def _get_extended_tools() -> List[Dict]:
 
     # Registry tools are checked fresh each time so check_fn filters correctly
     try:
-        from tools.registry import registry as _reg
+        from icecode_tools.registry import registry as _reg
         seen = {t["function"]["name"] for t in _STATIC_TOOLS_CACHE}
         dynamic = [
             s for s in _reg.get_available_schemas()
@@ -1087,7 +1087,7 @@ async def _exec_extended_tool(name: str, args: Dict) -> str:
         _sys.path.insert(0, _tools_path)
 
     try:
-        from tools.registry import registry
+        from icecode_tools.registry import registry
         tool = registry.get(name)
         if tool:
             handler = tool.get("handler") or tool.get("func")

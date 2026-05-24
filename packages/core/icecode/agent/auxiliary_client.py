@@ -99,10 +99,13 @@ class _OpenAIProxy:
 
 OpenAI = _OpenAIProxy()  # module-level name, resolves lazily on call/isinstance
 
-from agent.credential_pool import load_pool
+from icecode.agent.credential_pool import load_pool
 from icecode_cli.hermes_cli.config import get_hermes_home
 from icecode.icecode_constants import OPENROUTER_BASE_URL
-from utils import base_url_host_matches, base_url_hostname, normalize_proxy_env_vars
+try:
+    from utils import base_url_host_matches, base_url_hostname, normalize_proxy_env_vars
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname, normalize_proxy_env_vars
 
 logger = logging.getLogger(__name__)
 
@@ -383,11 +386,11 @@ _AI_GATEWAY_HEADERS = {
 # Callers should pass this as extra_body in chat.completions.create()
 # when the auxiliary client is backed by Nous Portal.
 #
-# The tags are computed from agent.portal_tags so the client= marker stays
+# The tags are computed from icecode.agent.portal_tags so the client= marker stays
 # in lockstep with icecode.__version__ across every Portal call site
 # (main loop, aux, compression, web_extract). Do not inline a literal here;
 # see agent/portal_tags.py for the rationale.
-from agent.portal_tags import nous_portal_tags as _nous_portal_tags
+from icecode.agent.portal_tags import nous_portal_tags as _nous_portal_tags
 
 
 def _nous_extra_body() -> dict:
@@ -940,8 +943,8 @@ class _AnthropicCompletionsAdapter:
         self._is_oauth = is_oauth
 
     def create(self, **kwargs) -> Any:
-        from agent.anthropic_adapter import build_anthropic_kwargs
-        from agent.transports import get_transport
+        from icecode.agent.anthropic_adapter import build_anthropic_kwargs
+        from icecode.agent.transports import get_transport
 
         messages = kwargs.get("messages", [])
         model = kwargs.get("model", self._model)
@@ -980,7 +983,7 @@ class _AnthropicCompletionsAdapter:
         # temperature for models that still accept it. build_anthropic_kwargs
         # additionally strips these keys as a safety net — keep both layers.
         if temperature is not None:
-            from agent.anthropic_adapter import _forbids_sampling_params
+            from icecode.agent.anthropic_adapter import _forbids_sampling_params
             if not _forbids_sampling_params(model):
                 anthropic_kwargs["temperature"] = temperature
 
@@ -1127,13 +1130,13 @@ def _maybe_wrap_anthropic(
     if _safe_isinstance(client_obj, CodexAuxiliaryClient):
         return client_obj
     try:
-        from agent.gemini_native_adapter import GeminiNativeClient
+        from icecode.agent.gemini_native_adapter import GeminiNativeClient
         if _safe_isinstance(client_obj, GeminiNativeClient):
             return client_obj
     except ImportError:
         pass
     try:
-        from agent.copilot_acp_client import CopilotACPClient
+        from icecode.agent.copilot_acp_client import CopilotACPClient
         if _safe_isinstance(client_obj, CopilotACPClient):
             return client_obj
     except ImportError:
@@ -1151,7 +1154,7 @@ def _maybe_wrap_anthropic(
         return client_obj
 
     try:
-        from agent.anthropic_adapter import build_anthropic_client
+        from icecode.agent.anthropic_adapter import build_anthropic_client
     except ImportError:
         logger.warning(
             "Endpoint %s speaks Anthropic Messages but the anthropic SDK is "
@@ -1337,7 +1340,7 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
                 continue  # skip provider if we don't know a valid aux model
             logger.debug("Auxiliary text client: %s (%s) via pool", pconfig.name, model)
             if provider_id == "gemini":
-                from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+                from icecode.agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
 
                 if is_native_gemini_base_url(base_url):
                     return GeminiNativeClient(api_key=api_key, base_url=base_url), model
@@ -1372,7 +1375,7 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
             continue  # skip provider if we don't know a valid aux model
         logger.debug("Auxiliary text client: %s (%s)", pconfig.name, model)
         if provider_id == "gemini":
-            from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+            from icecode.agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
 
             if is_native_gemini_base_url(base_url):
                 return GeminiNativeClient(api_key=api_key, base_url=base_url), model
@@ -1441,7 +1444,7 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
     # if another session already recorded a 429, skip Nous entirely
     # to avoid piling more requests onto the tapped RPH bucket.
     try:
-        from agent.nous_rate_guard import nous_rate_limit_remaining
+        from icecode.agent.nous_rate_guard import nous_rate_limit_remaining
         _remaining = nous_rate_limit_remaining()
         if _remaining is not None and _remaining > 0:
             logger.debug(
@@ -1710,7 +1713,7 @@ def _try_custom_endpoint() -> Tuple[Optional[Any], Optional[str]]:
         # LiteLLM proxies, etc.).  Must NEVER be treated as OAuth —
         # Anthropic OAuth claims only apply to api.anthropic.com.
         try:
-            from agent.anthropic_adapter import build_anthropic_client
+            from icecode.agent.anthropic_adapter import build_anthropic_client
             real_client = build_anthropic_client(custom_key, custom_base)
         except ImportError:
             logger.warning(
@@ -1774,7 +1777,7 @@ def _build_codex_client(model: str) -> Tuple[Optional[Any], Optional[str]]:
 
 def _try_anthropic(explicit_api_key: str = None) -> Tuple[Optional[Any], Optional[str]]:
     try:
-        from agent.anthropic_adapter import build_anthropic_client, resolve_anthropic_token
+        from icecode.agent.anthropic_adapter import build_anthropic_client, resolve_anthropic_token
     except ImportError:
         return None, None
 
@@ -1806,7 +1809,7 @@ def _try_anthropic(explicit_api_key: str = None) -> Tuple[Optional[Any], Optiona
     except Exception:
         pass
 
-    from agent.anthropic_adapter import _is_oauth_token
+    from icecode.agent.anthropic_adapter import _is_oauth_token
     is_oauth = _is_oauth_token(token)
     model = _get_aux_model_for_provider("anthropic") or "claude-haiku-4-5-20251001"
     logger.debug("Auxiliary client: Anthropic native (%s) at %s (oauth=%s)", model, base_url, is_oauth)
@@ -2402,7 +2405,7 @@ def _refresh_provider_credentials(provider: str) -> bool:
             _evict_cached_clients(normalized)
             return True
         if normalized == "anthropic":
-            from agent.anthropic_adapter import read_claude_code_credentials, _refresh_oauth_token, resolve_anthropic_token
+            from icecode.agent.anthropic_adapter import read_claude_code_credentials, _refresh_oauth_token, resolve_anthropic_token
 
             creds = read_claude_code_credentials()
             token = _refresh_oauth_token(creds) if isinstance(creds, dict) and creds.get("refreshToken") else None
@@ -2599,14 +2602,14 @@ def _to_async_client(sync_client, model: str, is_vision: bool = False):
     if isinstance(sync_client, AnthropicAuxiliaryClient):
         return AsyncAnthropicAuxiliaryClient(sync_client), model
     try:
-        from agent.gemini_native_adapter import GeminiNativeClient, AsyncGeminiNativeClient
+        from icecode.agent.gemini_native_adapter import GeminiNativeClient, AsyncGeminiNativeClient
 
         if isinstance(sync_client, GeminiNativeClient):
             return AsyncGeminiNativeClient(sync_client), model
     except ImportError:
         pass
     try:
-        from agent.copilot_acp_client import CopilotACPClient
+        from icecode.agent.copilot_acp_client import CopilotACPClient
         if isinstance(sync_client, CopilotACPClient):
             return sync_client, model
     except ImportError:
@@ -2632,7 +2635,7 @@ def _to_async_client(sync_client, model: str, is_vision: bool = False):
         # client-level headers on their ProviderProfile (e.g. attribution
         # User-Agent strings). Provider is inferred from the hostname.
         try:
-            from agent.model_metadata import _infer_provider_from_url
+            from icecode.agent.model_metadata import _infer_provider_from_url
             from providers import get_provider_profile as _gpf_async
             _inferred = _infer_provider_from_url(sync_base_url)
             if _inferred:
@@ -2951,7 +2954,7 @@ def resolve_provider_client(
                 # branch in _try_custom_endpoint(). See #15033.
                 if entry_api_mode == "anthropic_messages":
                     try:
-                        from agent.anthropic_adapter import build_anthropic_client
+                        from icecode.agent.anthropic_adapter import build_anthropic_client
                         real_client = build_anthropic_client(custom_key, custom_base)
                     except ImportError:
                         logger.warning(
@@ -3048,7 +3051,7 @@ def resolve_provider_client(
         final_model = _normalize_resolved_model(model or default_model, provider)
 
         if provider == "gemini":
-            from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+            from icecode.agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
 
             if is_native_gemini_base_url(base_url):
                 client = GeminiNativeClient(api_key=api_key, base_url=base_url)
@@ -3134,7 +3137,7 @@ def resolve_provider_client(
                     "process credentials are incomplete"
                 )
                 return None, None
-            from agent.copilot_acp_client import CopilotACPClient
+            from icecode.agent.copilot_acp_client import CopilotACPClient
 
             client = CopilotACPClient(
                 api_key=api_key,
@@ -3153,8 +3156,8 @@ def resolve_provider_client(
         # AWS SDK providers (Bedrock) — use the Anthropic Bedrock client via
         # boto3's credential chain (IAM roles, SSO, env vars, instance metadata).
         try:
-            from agent.bedrock_adapter import has_aws_credentials, resolve_bedrock_region
-            from agent.anthropic_adapter import build_anthropic_bedrock_client
+            from icecode.agent.bedrock_adapter import has_aws_credentials, resolve_bedrock_region
+            from icecode.agent.anthropic_adapter import build_anthropic_bedrock_client
         except ImportError:
             logger.warning("resolve_provider_client: bedrock requested but "
                            "boto3 or anthropic SDK not installed")
@@ -3998,7 +4001,7 @@ def _build_call_kwargs(
     # structured-JSON extraction) don't 400 the moment
     # the aux model is flipped to 4.7.
     if temperature is not None:
-        from agent.anthropic_adapter import _forbids_sampling_params
+        from icecode.agent.anthropic_adapter import _forbids_sampling_params
         if _forbids_sampling_params(model):
             temperature = None
 

@@ -161,6 +161,22 @@ def _register_routes(app: FastAPI):
         async def serve_sw():
             return FileResponse(str(_WEB_UI / "sw.js"), media_type="application/javascript")
 
+        @app.get("/icon-192.png", include_in_schema=False)
+        async def serve_icon192():
+            icon_path = _WEB_UI / "icon-192.png"
+            if icon_path.exists():
+                return FileResponse(str(icon_path), media_type="image/png")
+            from fastapi.responses import Response
+            return Response(status_code=404)
+
+        @app.get("/icon-512.png", include_in_schema=False)
+        async def serve_icon512():
+            icon_path = _WEB_UI / "icon-512.png"
+            if icon_path.exists():
+                return FileResponse(str(icon_path), media_type="image/png")
+            from fastapi.responses import Response
+            return Response(status_code=404)
+
     # Health + metrics
     from fastapi.responses import JSONResponse
     import time as _time

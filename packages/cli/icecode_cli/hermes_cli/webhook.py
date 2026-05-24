@@ -18,7 +18,10 @@ from pathlib import Path
 from typing import Dict
 
 from icecode.icecode_constants import display_hermes_home
-from utils import atomic_replace
+try:
+    from utils import atomic_replace
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace
 from icecode_cli.hermes_cli.config import cfg_get
 
 

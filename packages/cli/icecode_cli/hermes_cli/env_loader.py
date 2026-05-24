@@ -7,7 +7,10 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-from utils import atomic_replace
+try:
+    from utils import atomic_replace
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace
 
 
 # Env var name suffixes that indicate credential values.  These are the

@@ -27,8 +27,8 @@ import threading
 import time
 from typing import Dict, Any, List, Optional, Tuple
 
-from tools.registry import discover_builtin_tools, registry
-from toolsets import resolve_toolset, validate_toolset
+from icecode_tools.registry import discover_builtin_tools, registry
+from icecode.toolsets import resolve_toolset, validate_toolset
 
 logger = logging.getLogger(__name__)
 

@@ -37,9 +37,9 @@ from typing import Any, Dict, Iterator, List, Optional
 
 import httpx
 
-from agent import google_oauth
-from agent.gemini_schema import sanitize_gemini_tool_parameters
-from agent.google_code_assist import (
+from icecode.agent import google_oauth
+from icecode.agent.gemini_schema import sanitize_gemini_tool_parameters
+from icecode.agent.google_code_assist import (
     CODE_ASSIST_ENDPOINT,
     CodeAssistError,
     ProjectContext,

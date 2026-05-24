@@ -90,9 +90,9 @@ def run_lsp_command(args: argparse.Namespace) -> int:
 
 
 def _cmd_status(emit_json: bool) -> int:
-    from agent.lsp import get_service
-    from agent.lsp.servers import SERVERS
-    from agent.lsp.install import detect_status
+    from icecode.agent.lsp import get_service
+    from icecode.agent.lsp.servers import SERVERS
+    from icecode.agent.lsp.install import detect_status
 
     svc = get_service()
     service_active = svc is not None
@@ -175,8 +175,8 @@ def _cmd_status(emit_json: bool) -> int:
 
 
 def _cmd_list(installed_only: bool) -> int:
-    from agent.lsp.servers import SERVERS
-    from agent.lsp.install import detect_status
+    from icecode.agent.lsp.servers import SERVERS
+    from icecode.agent.lsp.install import detect_status
 
     for s in SERVERS:
         pkg = _recipe_pkg_for(s.server_id)
@@ -190,7 +190,7 @@ def _cmd_list(installed_only: bool) -> int:
 
 
 def _cmd_install(server_id: str) -> int:
-    from agent.lsp.install import try_install, INSTALL_RECIPES, detect_status
+    from icecode.agent.lsp.install import try_install, INSTALL_RECIPES, detect_status
     pkg = _recipe_pkg_for(server_id)
     pre_status = detect_status(pkg)
     if pre_status == "installed":
@@ -214,8 +214,8 @@ def _cmd_install(server_id: str) -> int:
 
 
 def _cmd_install_all(include_manual: bool) -> int:
-    from agent.lsp.servers import SERVERS
-    from agent.lsp.install import try_install, INSTALL_RECIPES, detect_status
+    from icecode.agent.lsp.servers import SERVERS
+    from icecode.agent.lsp.install import try_install, INSTALL_RECIPES, detect_status
 
     rc = 0
     for s in SERVERS:
@@ -240,7 +240,7 @@ def _cmd_install_all(include_manual: bool) -> int:
 
 
 def _cmd_restart() -> int:
-    from agent.lsp import shutdown_service
+    from icecode.agent.lsp import shutdown_service
 
     shutdown_service()
     sys.stdout.write("LSP service shut down. Next edit will respawn clients.\n")
@@ -248,7 +248,7 @@ def _cmd_restart() -> int:
 
 
 def _cmd_which(server_id: str) -> int:
-    from agent.lsp.install import INSTALL_RECIPES, hermes_lsp_bin_dir
+    from icecode.agent.lsp.install import INSTALL_RECIPES, hermes_lsp_bin_dir
     import os
     import shutil as _shutil
 
@@ -294,7 +294,7 @@ def _backend_warnings() -> list:
     suggestion across common platforms.
     """
     import shutil as _shutil
-    from agent.lsp.install import hermes_lsp_bin_dir
+    from icecode.agent.lsp.install import hermes_lsp_bin_dir
     notes: list = []
     bash_installed = _shutil.which("bash-language-server") is not None or (
         (hermes_lsp_bin_dir() / "bash-language-server").exists()

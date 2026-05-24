@@ -24,7 +24,10 @@ from pathlib import Path
 from typing import Optional
 
 from icecode.icecode_constants import get_hermes_home
-from utils import atomic_replace
+try:
+    from utils import atomic_replace
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace
 
 logger = logging.getLogger(__name__)
 

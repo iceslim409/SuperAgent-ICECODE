@@ -13,7 +13,7 @@ chats) from spawning daemons they don't need.
 
 Public API:
 
-    from agent.lsp import get_service
+    from icecode.agent.lsp import get_service
 
     svc = get_service()
     if svc and svc.enabled_for(path):
@@ -33,7 +33,7 @@ import logging
 import threading
 from typing import Optional
 
-from agent.lsp.manager import LSPService
+from icecode.agent.lsp.manager import LSPService
 
 logger = logging.getLogger("agent.lsp")
 

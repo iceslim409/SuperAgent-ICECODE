@@ -50,7 +50,10 @@ import logging
 import os
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from agent.web_search_provider import WebSearchProvider
+try:
+    from agent.web_search_provider import WebSearchProvider
+except (ImportError, ModuleNotFoundError):
+    from icecode.agent.web_search_provider import WebSearchProvider  # type: ignore[no-redef]
 from tools.website_policy import check_website_access
 
 logger = logging.getLogger(__name__)

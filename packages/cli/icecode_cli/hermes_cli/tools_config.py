@@ -29,7 +29,10 @@ from icecode_cli.hermes_cli.nous_subscription import (
     get_nous_subscription_features,
 )
 from tools.tool_backend_helpers import fal_key_is_configured, managed_nous_tools_enabled
-from utils import base_url_hostname, is_truthy_value
+try:
+    from utils import base_url_hostname, is_truthy_value
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_hostname, is_truthy_value
 
 logger = logging.getLogger(__name__)
 

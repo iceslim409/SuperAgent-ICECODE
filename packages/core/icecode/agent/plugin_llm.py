@@ -570,7 +570,7 @@ def _resolve_attribution(
         provider = provider_override
     else:
         try:
-            from agent.auxiliary_client import _read_main_provider
+            from icecode.agent.auxiliary_client import _read_main_provider
             provider = (_read_main_provider() or "").strip() or "auto"
         except Exception:  # pragma: no cover — defensive
             provider = "auto"
@@ -582,7 +582,7 @@ def _resolve_attribution(
         model = model_override
     else:
         try:
-            from agent.auxiliary_client import _read_main_model
+            from icecode.agent.auxiliary_client import _read_main_model
             model = (_read_main_model() or "").strip() or "default"
         except Exception:  # pragma: no cover — defensive
             model = "default"
@@ -942,7 +942,7 @@ class PluginLlm:
                 timeout=timeout,
                 extra_body=extra_body,
             )
-        from agent.auxiliary_client import call_llm
+        from icecode.agent.auxiliary_client import call_llm
         merged_extra = dict(extra_body or {})
         if profile_override:
             merged_extra.setdefault("metadata", {})["auth_profile"] = profile_override
@@ -986,7 +986,7 @@ class PluginLlm:
                 timeout=timeout,
                 extra_body=extra_body,
             )
-        from agent.auxiliary_client import async_call_llm
+        from icecode.agent.auxiliary_client import async_call_llm
         merged_extra = dict(extra_body or {})
         if profile_override:
             merged_extra.setdefault("metadata", {})["auth_profile"] = profile_override

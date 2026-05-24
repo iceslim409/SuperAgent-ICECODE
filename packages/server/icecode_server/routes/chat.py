@@ -467,16 +467,29 @@ async def chat_websocket(websocket: WebSocket, session_id: str):
             )
             agent.history = history
 
+            ws_alive = True
             try:
                 async for chunk in agent.stream(message):
                     if cancel_event.is_set():
-                        await websocket.send_json({"type": "cancelled"})
+                        try:
+                            await websocket.send_json({"type": "cancelled"})
+                        except (WebSocketDisconnect, RuntimeError):
+                            ws_alive = False
                         break
-                    await websocket.send_json(chunk)
+                    try:
+                        await websocket.send_json(chunk)
+                    except (WebSocketDisconnect, RuntimeError):
+                        ws_alive = False
+                        break
+            except WebSocketDisconnect:
+                ws_alive = False
             except Exception as e:
-                await websocket.send_json({"type": "error", "content": str(e)})
+                try:
+                    await websocket.send_json({"type": "error", "content": str(e)})
+                except (WebSocketDisconnect, RuntimeError):
+                    ws_alive = False
 
-            # Persist session
+            # Persist session regardless of connection state
             try:
                 store.save(session_id, agent.history, {
                     "model": actual_model,
@@ -486,7 +499,12 @@ async def chat_websocket(websocket: WebSocket, session_id: str):
             except Exception:
                 pass
 
-            await websocket.send_json({"type": "done", "session_id": session_id})
+            if not ws_alive:
+                break
+            try:
+                await websocket.send_json({"type": "done", "session_id": session_id})
+            except (WebSocketDisconnect, RuntimeError):
+                break
 
     except WebSocketDisconnect:
         pass

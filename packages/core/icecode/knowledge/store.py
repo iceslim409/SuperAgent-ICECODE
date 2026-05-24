@@ -18,7 +18,7 @@ _SOURCES_FILE = _STORE_DIR / "sources.json"
 class VectorStore:
     """FAISS vector store with JSON metadata persistence."""
 
-    def __init__(self, dim: int = 384):
+    def __init__(self, dim: int = 768):  # 768 = nomic-embed-text / MiniLM-L12
         self.dim = dim
         self._index = None
         self._meta: List[Dict[str, Any]] = []
