@@ -93,7 +93,34 @@ class IterationBudget:
 
 
 class _ConversationMixin:
-    """Main conversation loop — run_conversation, chat, and codex server turn."""
+    """Main conversation loop — run_conversation, chat, and codex server turn.
+
+    run_conversation() is organized in 7 phases:
+      Phase 1 — Turn preamble:    sanitize inputs, restore runtime, set context vars
+      Phase 2 — State reset:      clear per-turn retry counters and vision flags
+      Phase 3 — History init:     hydrate todo/nudge from history, append user msg
+      Phase 4 — System prompt:    build or reload cached system prompt
+      Phase 5 — Preflight:        context compression + preflight hooks
+      Phase 6 — Agent loop:       API calls, streaming, tool dispatch, error recovery
+      Phase 7 — Turn cleanup:     persist session, diagnostic log, memory sync, result
+    """
+
+    def _reset_turn_counters(self) -> None:
+        """Phase 2 — reset all per-turn retry counters and feature flags."""
+        self._invalid_tool_retries = 0
+        self._invalid_json_retries = 0
+        self._empty_content_retries = 0
+        self._incomplete_scratchpad_retries = 0
+        self._codex_incomplete_retries = 0
+        self._thinking_prefill_retries = 0
+        self._post_tool_empty_retried = False
+        self._last_content_with_tools = None
+        self._last_content_tools_all_housekeeping = False
+        self._mute_post_response = False
+        self._unicode_sanitization_passes = 0
+        self._tool_guardrails.reset_for_turn()
+        self._tool_guardrail_halt_decision = None
+        self._vision_supported = True  # reset until a text-only error is seen
 
     def run_conversation(
         self,
@@ -123,6 +150,7 @@ class _ConversationMixin:
         Returns:
             Dict: Complete conversation result with final response and message history
         """
+        # ── Phase 1 — turn preamble: sanitize inputs, restore runtime, set ctx ──
         # Guard stdio against OSError from broken pipes (systemd/headless/daemon).
         # Installed once, transparent when streams are healthy, prevents crash on write.
         _install_safe_stdio()
@@ -182,26 +210,8 @@ class _ConversationMixin:
         # child-launch time see the parent's real id, not None.
         self._current_task_id = effective_task_id
         
-        # Reset retry counters and iteration budget at the start of each turn
-        # so subagent usage from a previous turn doesn't eat into the next one.
-        self._invalid_tool_retries = 0
-        self._invalid_json_retries = 0
-        self._empty_content_retries = 0
-        self._incomplete_scratchpad_retries = 0
-        self._codex_incomplete_retries = 0
-        self._thinking_prefill_retries = 0
-        self._post_tool_empty_retried = False
-        self._last_content_with_tools = None
-        self._last_content_tools_all_housekeeping = False
-        self._mute_post_response = False
-        self._unicode_sanitization_passes = 0
-        self._tool_guardrails.reset_for_turn()
-        self._tool_guardrail_halt_decision = None
-        # True until the server rejects an image_url content part with an error
-        # like "Only 'text' content type is supported."  Set to False on first
-        # rejection and kept False for the rest of the session so we never re-send
-        # images to a text-only endpoint.  Scoped per `_run()` call, not per instance.
-        self._vision_supported = True
+        # ── Phase 2 — per-turn state reset ─────────────────────────────────
+        self._reset_turn_counters()
 
         # Pre-turn connection health check: detect and clean up dead TCP
         # connections left over from provider outages or dropped streams.
@@ -227,6 +237,7 @@ class _ConversationMixin:
         # calls so that nudge logic accumulates correctly in CLI mode.
         self.iteration_budget = IterationBudget(self.max_iterations)
 
+        # ── Phase 3 — history initialization ───────────────────────────────
         # Log conversation turn start for debugging/observability
         _preview_text = _summarize_user_message_for_log(user_message)
         _msg_preview = (_preview_text[:80] + "...") if len(_preview_text) > 80 else _preview_text
@@ -314,7 +325,7 @@ class _ConversationMixin:
             _print_preview = _summarize_user_message_for_log(user_message)
             self._safe_print(f"💬 Starting conversation: '{_print_preview[:60]}{'...' if len(_print_preview) > 60 else ''}'")
         
-        # ── System prompt (cached per session for prefix caching) ──
+        # ── Phase 4 — system prompt (cached per session for prefix caching) ──
         # Built once on first call, reused for all subsequent calls.
         # Only rebuilt after context compression events (which invalidate
         # the cache and reload memory from disk).
@@ -366,7 +377,7 @@ class _ConversationMixin:
 
         active_system_prompt = self._cached_system_prompt
 
-        # ── Preflight context compression ──
+        # ── Phase 5 — preflight context compression + hooks ───────────────
         # Before entering the main loop, check if the loaded conversation
         # history already exceeds the model's context threshold.  This handles
         # cases where a user switches to a model with a smaller context window
@@ -470,7 +481,7 @@ class _ConversationMixin:
         except Exception as exc:
             logger.warning("pre_llm_call hook failed: %s", exc)
 
-        # Main conversation loop
+        # ── Phase 6 — main agent loop (API calls, streaming, tool dispatch) ──
         api_call_count = 0
         final_response = None
         interrupted = False
@@ -3742,7 +3753,8 @@ class _ConversationMixin:
         self._drop_trailing_empty_response_scaffolding(messages)
         self._persist_session(messages, conversation_history)
 
-        # ── Turn-exit diagnostic log ─────────────────────────────────────
+        # ── Phase 7 — turn cleanup: persist session, diagnostic log, result ──
+        # ── 7a. Turn-exit diagnostic log ────────────────────────────────────
         # Always logged at INFO so agent.log captures WHY every turn ended.
         # When the last message is a tool result (agent was mid-work), log
         # at WARNING — this is the "just stops" scenario users report.
