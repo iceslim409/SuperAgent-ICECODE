@@ -53,58 +53,58 @@ def _load_extended_tools(skip_registry: bool = False) -> List[Dict]:
 
     _WANT = [
         # (module_path, schema_attr)
-        ("tools.todo_tool",             "TODO_SCHEMA"),
-        ("tools.memory_tool",           "MEMORY_SCHEMA"),
-        ("tools.vision_tools",          "VISION_ANALYZE_SCHEMA"),
-        ("tools.vision_tools",          "VIDEO_ANALYZE_SCHEMA"),
-        ("tools.session_search_tool",   "SESSION_SEARCH_SCHEMA"),
-        ("tools.clarify_tool",          "CLARIFY_SCHEMA"),
-        ("tools.image_generation_tool", "IMAGE_GEN_SCHEMA"),
-        ("tools.video_generation_tool", "VIDEO_GEN_SCHEMA"),
-        ("tools.tts_tool",              "TTS_SCHEMA"),
-        ("tools.web_tools",             "WEB_SEARCH_SCHEMA"),
-        ("tools.web_tools",             "WEB_EXTRACT_SCHEMA"),
-        ("tools.file.file_tools",       "PATCH_SCHEMA"),
-        ("tools.file.file_tools",       "SEARCH_FILES_SCHEMA"),
-        ("tools.delegate_tool",         "DELEGATE_TASK_SCHEMA"),
-        ("tools.cronjob_tools",         "CRONJOB_SCHEMA"),
-        ("tools.homeassistant_tool",    "HA_LIST_ENTITIES_SCHEMA"),
-        ("tools.homeassistant_tool",    "HA_GET_STATE_SCHEMA"),
-        ("tools.homeassistant_tool",    "HA_LIST_SERVICES_SCHEMA"),
-        ("tools.homeassistant_tool",    "HA_CALL_SERVICE_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_SHOW_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_LIST_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_COMPLETE_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_BLOCK_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_COMMENT_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_CREATE_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_UNBLOCK_SCHEMA"),
-        ("tools.kanban_tools",          "KANBAN_LINK_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_LIST_ENVIRONMENTS_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_START_TRAINING_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_CHECK_STATUS_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_GET_RESULTS_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_EDIT_CONFIG_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_GET_CURRENT_CONFIG_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_STOP_TRAINING_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_LIST_RUNS_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_SELECT_ENVIRONMENT_SCHEMA"),
-        ("tools.rl_training_tool",      "RL_TEST_INFERENCE_SCHEMA"),
-        ("tools.discord_tool",          "DISCORD_SCHEMA"),
+        ("icecode_tools.todo_tool",             "TODO_SCHEMA"),
+        ("icecode_tools.memory_tool",           "MEMORY_SCHEMA"),
+        ("icecode_tools.vision_tools",          "VISION_ANALYZE_SCHEMA"),
+        ("icecode_tools.vision_tools",          "VIDEO_ANALYZE_SCHEMA"),
+        ("icecode_tools.session_search_tool",   "SESSION_SEARCH_SCHEMA"),
+        ("icecode_tools.clarify_tool",          "CLARIFY_SCHEMA"),
+        ("icecode_tools.image_generation_tool", "IMAGE_GEN_SCHEMA"),
+        ("icecode_tools.video_generation_tool", "VIDEO_GEN_SCHEMA"),
+        ("icecode_tools.tts_tool",              "TTS_SCHEMA"),
+        ("icecode_tools.web_tools",             "WEB_SEARCH_SCHEMA"),
+        ("icecode_tools.web_tools",             "WEB_EXTRACT_SCHEMA"),
+        ("icecode_tools.file.file_tools",       "PATCH_SCHEMA"),
+        ("icecode_tools.file.file_tools",       "SEARCH_FILES_SCHEMA"),
+        ("icecode_tools.delegate_tool",         "DELEGATE_TASK_SCHEMA"),
+        ("icecode_tools.cronjob_tools",         "CRONJOB_SCHEMA"),
+        ("icecode_tools.homeassistant_tool",    "HA_LIST_ENTITIES_SCHEMA"),
+        ("icecode_tools.homeassistant_tool",    "HA_GET_STATE_SCHEMA"),
+        ("icecode_tools.homeassistant_tool",    "HA_LIST_SERVICES_SCHEMA"),
+        ("icecode_tools.homeassistant_tool",    "HA_CALL_SERVICE_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_SHOW_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_LIST_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_COMPLETE_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_BLOCK_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_COMMENT_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_CREATE_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_UNBLOCK_SCHEMA"),
+        ("icecode_tools.kanban_tools",          "KANBAN_LINK_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_LIST_ENVIRONMENTS_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_START_TRAINING_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_CHECK_STATUS_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_GET_RESULTS_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_EDIT_CONFIG_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_GET_CURRENT_CONFIG_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_STOP_TRAINING_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_LIST_RUNS_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_SELECT_ENVIRONMENT_SCHEMA"),
+        ("icecode_tools.rl_training_tool",      "RL_TEST_INFERENCE_SCHEMA"),
+        ("icecode_tools.discord_tool",          "DISCORD_SCHEMA"),
         # Feishu / Lark integration
-        ("tools.feishu_doc_tool",       "FEISHU_DOC_READ_SCHEMA"),
-        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_LIST_COMMENTS_SCHEMA"),
-        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_LIST_REPLIES_SCHEMA"),
-        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_REPLY_SCHEMA"),
-        ("tools.feishu_drive_tool",     "FEISHU_DRIVE_ADD_COMMENT_SCHEMA"),
+        ("icecode_tools.feishu_doc_tool",       "FEISHU_DOC_READ_SCHEMA"),
+        ("icecode_tools.feishu_drive_tool",     "FEISHU_DRIVE_LIST_COMMENTS_SCHEMA"),
+        ("icecode_tools.feishu_drive_tool",     "FEISHU_DRIVE_LIST_REPLIES_SCHEMA"),
+        ("icecode_tools.feishu_drive_tool",     "FEISHU_DRIVE_REPLY_SCHEMA"),
+        ("icecode_tools.feishu_drive_tool",     "FEISHU_DRIVE_ADD_COMMENT_SCHEMA"),
         # Multi-LLM mixture
-        ("tools.mixture_of_agents_tool","MOA_SCHEMA"),
+        ("icecode_tools.mixture_of_agents_tool","MOA_SCHEMA"),
         # Skills management
-        ("tools.skills_tool",           "SKILLS_LIST_SCHEMA"),
-        ("tools.skills_tool",           "SKILL_VIEW_SCHEMA"),
-        ("tools.skill_manager_tool",    "SKILL_MANAGE_SCHEMA"),
+        ("icecode_tools.skills_tool",           "SKILLS_LIST_SCHEMA"),
+        ("icecode_tools.skills_tool",           "SKILL_VIEW_SCHEMA"),
+        ("icecode_tools.skill_manager_tool",    "SKILL_MANAGE_SCHEMA"),
         # Process & code execution
-        ("tools.process_registry",      "PROCESS_SCHEMA"),
+        ("icecode_tools.process_registry",      "PROCESS_SCHEMA"),
     ]
 
     seen_names = set()
@@ -121,7 +121,7 @@ def _load_extended_tools(skip_registry: bool = False) -> List[Dict]:
 
     # Load browser tools (exported as a list, not individual schema attrs)
     try:
-        browser_mod = _il.import_module("tools.browser_tool")
+        browser_mod = _il.import_module("icecode_tools.browser_tool")
         browser_schemas = getattr(browser_mod, "BROWSER_TOOL_SCHEMAS", [])
         for schema in browser_schemas:
             if isinstance(schema, dict):
@@ -139,14 +139,14 @@ def _load_extended_tools(skip_registry: bool = False) -> List[Dict]:
 
     # Trigger import of registry-only modules to ensure they register themselves
     _REGISTRY_ONLY_MODULES = [
-        "tools.yuanbao_tools",
-        "tools.send_message_tool",
-        "tools.code_execution_tool",
-        "tools.browser_cdp_tool",
-        "tools.browser_dialog_tool",
-        "tools.computer_use_tool",
-        "tools.mcp_tool",
-        "tools.terminal_tool",
+        "icecode_tools.yuanbao_tools",
+        "icecode_tools.send_message_tool",
+        "icecode_tools.code_execution_tool",
+        "icecode_tools.browser_cdp_tool",
+        "icecode_tools.browser_dialog_tool",
+        "icecode_tools.computer_use_tool",
+        "icecode_tools.mcp_tool",
+        "icecode_tools.terminal_tool",
     ]
     for mod_path in _REGISTRY_ONLY_MODULES:
         try:
@@ -1099,11 +1099,11 @@ async def _exec_extended_tool(name: str, args: Dict) -> str:
 
     # Fallback: try direct module import patterns
     _DIRECT_MAP = {
-        "todo":           ("tools.todo_tool",    "todo_tool"),
-        "memory":         ("tools.memory_tool",  "memory_tool"),
-        "vision_analyze": ("tools.vision_tools", "vision_analyze"),
-        "session_search": ("tools.session_search_tool", "session_search"),
-        "clarify":        ("tools.clarify_tool", "clarify_tool"),
+        "todo":           ("icecode_tools.todo_tool",    "todo_tool"),
+        "memory":         ("icecode_tools.memory_tool",  "memory_tool"),
+        "vision_analyze": ("icecode_tools.vision_tools", "vision_analyze"),
+        "session_search": ("icecode_tools.session_search_tool", "session_search"),
+        "clarify":        ("icecode_tools.clarify_tool", "clarify_tool"),
     }
     if name in _DIRECT_MAP:
         try:

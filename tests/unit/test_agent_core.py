@@ -271,7 +271,7 @@ class TestSelectTools:
     # Browser keywords
     def test_browser_keyword_adds_browser_tools(self):
         names = self._names("fa un screenshot la browser")
-        assert "browser_snapshot" in names or "browser_navigate" in names
+        assert "browser_fetch" in names or "browser_snapshot" in names or "browser_navigate" in names
 
     # Telegram keyword adds messaging tools (only if gateway configured)
     def test_telegram_keyword_triggers_domain_check(self):

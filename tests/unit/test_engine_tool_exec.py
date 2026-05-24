@@ -94,20 +94,20 @@ class TestInvokeTool:
     def test_clarify_tool_uses_callback(self):
         agent = self._make_agent()
         agent.clarify_callback = MagicMock(return_value="user answer")
-        with patch("tools.clarify_tool.clarify_tool", return_value="user answer"):
+        with patch("icecode_tools.clarify_tool.clarify_tool", return_value="user answer"):
             result = agent._invoke_tool("clarify", {"question": "Continue?"}, "task1")
         assert result == "user answer"
 
     def test_delegate_task_routes_correctly(self):
         agent = self._make_agent()
-        with patch("tools.delegate_tool.delegate_task", return_value="done") as mock_dt:
+        with patch("icecode_tools.delegate_tool.delegate_task", return_value="done") as mock_dt:
             result = agent._invoke_tool("delegate_task", {"goal": "test goal"}, "task1")
         mock_dt.assert_called_once()
         assert result == "done"
 
     def test_dispatch_delegate_passes_parent_agent(self):
         agent = self._make_agent()
-        with patch("tools.delegate_tool.delegate_task", return_value="delegated") as mock_delegate:
+        with patch("icecode_tools.delegate_tool.delegate_task", return_value="delegated") as mock_delegate:
             result = agent._dispatch_delegate_task({"goal": "do stuff", "tasks": None})
         mock_delegate.assert_called_once()
         call_kwargs = mock_delegate.call_args.kwargs
