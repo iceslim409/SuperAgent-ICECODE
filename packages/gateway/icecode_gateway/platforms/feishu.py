@@ -141,7 +141,10 @@ from gateway.platforms.base import (
 )
 from gateway.status import acquire_scoped_lock, release_scoped_lock
 from icecode.icecode_constants import get_hermes_home
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 
 logger = logging.getLogger(__name__)
 

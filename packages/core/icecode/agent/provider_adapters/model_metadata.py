@@ -16,7 +16,10 @@ from urllib.parse import urlparse
 import requests
 import yaml
 
-from utils import base_url_host_matches, base_url_hostname
+try:
+    from utils import base_url_host_matches, base_url_hostname
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname
 
 from icecode.icecode_constants import OPENROUTER_MODELS_URL
 

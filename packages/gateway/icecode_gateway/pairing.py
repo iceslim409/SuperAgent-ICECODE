@@ -28,7 +28,10 @@ from pathlib import Path
 from typing import Optional
 
 from icecode.icecode_constants import get_hermes_dir
-from utils import atomic_replace
+try:
+    from utils import atomic_replace
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_replace
 
 
 # Unambiguous alphabet -- excludes 0/O, 1/I to prevent confusion

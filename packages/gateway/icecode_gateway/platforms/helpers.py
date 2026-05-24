@@ -13,7 +13,10 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict
 
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 
 if TYPE_CHECKING:
     from gateway.platforms.base import MessageEvent

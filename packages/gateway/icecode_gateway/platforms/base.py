@@ -19,7 +19,10 @@ import uuid
 from abc import ABC, abstractmethod
 from urllib.parse import urlsplit
 
-from utils import normalize_proxy_url
+try:
+    from utils import normalize_proxy_url
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import normalize_proxy_url
 
 logger = logging.getLogger(__name__)
 

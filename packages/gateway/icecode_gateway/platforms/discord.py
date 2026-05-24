@@ -51,7 +51,10 @@ from gateway.config import Platform, PlatformConfig
 import re
 
 from gateway.platforms.helpers import MessageDeduplicator, ThreadParticipationTracker
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 from gateway.platforms.base import (
     BasePlatformAdapter,
     MessageEvent,

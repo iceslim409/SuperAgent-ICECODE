@@ -12,7 +12,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from icecode_cli.hermes_cli.config import get_hermes_home
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 
 logger = logging.getLogger(__name__)
 

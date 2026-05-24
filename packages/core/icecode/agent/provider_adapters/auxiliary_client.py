@@ -105,7 +105,10 @@ except (ImportError, ModuleNotFoundError):
     def load_pool(*a, **kw): return {}
 from icecode_cli.hermes_cli.config import get_hermes_home
 from icecode.icecode_constants import OPENROUTER_BASE_URL
-from utils import base_url_host_matches, base_url_hostname, normalize_proxy_env_vars
+try:
+    from utils import base_url_host_matches, base_url_hostname, normalize_proxy_env_vars
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import base_url_host_matches, base_url_hostname, normalize_proxy_env_vars
 
 logger = logging.getLogger(__name__)
 

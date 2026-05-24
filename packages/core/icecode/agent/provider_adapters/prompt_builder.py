@@ -27,7 +27,10 @@ except (ImportError, ModuleNotFoundError):
     parse_frontmatter,
     skill_matches_platform,
 )
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 
 logger = logging.getLogger(__name__)
 

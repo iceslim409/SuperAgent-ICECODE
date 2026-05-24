@@ -21,7 +21,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from icecode.icecode_constants import get_hermes_home
 from typing import Any, Optional
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 
 if sys.platform == "win32":
     import msvcrt

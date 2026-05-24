@@ -319,7 +319,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # ICECODE home directory (respects ICECODE_HOME override)
 from icecode.icecode_constants import get_hermes_home
-from utils import atomic_json_write, atomic_yaml_write, base_url_host_matches, is_truthy_value
+try:
+    from utils import atomic_json_write, atomic_yaml_write, base_url_host_matches, is_truthy_value
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write, atomic_yaml_write, base_url_host_matches, is_truthy_value
 _hermes_home = get_hermes_home()
 
 # Load environment variables from ~/.icecode/.env first.

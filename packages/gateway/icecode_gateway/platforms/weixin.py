@@ -67,7 +67,10 @@ from gateway.platforms.base import (
     cache_image_from_bytes,
 )
 from icecode.icecode_constants import get_hermes_home
-from utils import atomic_json_write
+try:
+    from utils import atomic_json_write
+except (ImportError, ModuleNotFoundError):
+    from icecode.utils import atomic_json_write
 
 ILINK_BASE_URL = "https://ilinkai.weixin.qq.com"
 WEIXIN_CDN_BASE_URL = "https://novac2c.cdn.weixin.qq.com/c2c"
